@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Конвейер Терминатор</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  :root {
+    --bg:       #0b0f1a;
+    --surface:  #131825;
+    --card:     #1a2235;
+    --border:   #243050;
+    --accent:   #00d4ff;
+    --accent2:  #0088bb;
+    --warn:     #ff6b35;
+    --ok:       #00e096;
+    --muted:    #4a5a7a;
+    --text:     #e8edf8;
+    --subtext:  #8a9bc0;
+    --font:     'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --mono:     'SF Mono', 'Fira Code', 'Courier New', monospace;
+    --r:        10px;
+    --r-sm:     6px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding-bottom: 90px;
+    overscroll-behavior: none;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 16px 12px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .header-icon {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+  }
+  .header-title { font-size: 15px; font-weight: 700; letter-spacing: .3px; }
+  .header-sub { font-size: 11px; color: var(--subtext); margin-top: 1px; font-family: var(--mono); }
+  .header-status {
+    margin-left: auto;
+    width: 8px; height: 8px;
+    background: var(--ok);
+    border-radius: 50%;
+    box-shadow: 0 0 6px var(--ok);
+    flex-shrink: 0;
+  }
+
+  /* ── SECTION LABEL ── */
+  .section-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    padding: 18px 16px 8px;
+  }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    margin: 0 12px 8px;
+    overflow: hidden;
+  }
+
+  /* ── FIELD ROW ── */
+  .field {
+    display: flex;
+    align-items: center;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    gap: 10px;
+    cursor: pointer;
+    transition: background .15s;
+    -webkit-user-select: none; user-select: none;
+  }
+  .field:last-child { border-bottom: none; }
+  .field:active { background: rgba(0,212,255,.05); }
+  .field-icon { font-size: 16px; width: 22px; text-align: center; flex-shrink: 0; }
+  .field-body { flex: 1; min-width: 0; }
+  .field-label { font-size: 10px; color: var(--subtext); font-weight: 600; letter-spacing: .5px; text-transform: uppercase; margin-bottom: 3px; }
+  .field-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .field-value.mono { font-family: var(--mono); font-size: 13px; }
+  .field-value.dim  { color: var(--muted); font-weight: 400; font-style: italic; }
+  .field-value.ok   { color: var(--ok); }
+  .field-arrow { color: var(--muted); font-size: 12px; flex-shrink: 0; }
+
+  /* ── COMPUTED BADGE ── */
+  .computed-row {
+    display: flex;
+    gap: 8px;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .computed-row:last-child { border-bottom: none; }
+  .computed-chip {
+    flex: 1;
+    background: rgba(0,212,255,.07);
+    border: 1px solid rgba(0,212,255,.2);
+    border-radius: var(--r-sm);
+    padding: 8px 10px;
+    text-align: center;
+  }
+  .computed-chip-label { font-size: 9px; color: var(--subtext); letter-spacing: .8px; text-transform: uppercase; font-weight: 700; }
+  .computed-chip-val { font-size: 16px; font-weight: 800; color: var(--accent); font-family: var(--mono); margin-top: 3px; }
+  .computed-chip-unit { font-size: 9px; color: var(--subtext); }
+
+  /* ── COMPANY PILLS ── */
+  .company-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    padding: 12px 12px;
+  }
+  .company-pill {
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: var(--r-sm);
+    padding: 10px 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: all .2s;
+    -webkit-user-select: none; user-select: none;
+  }
+  .company-pill:active { transform: scale(.96); }
+  .company-pill.selected {
+    border-color: var(--accent);
+    background: rgba(0,212,255,.1);
+  }
+  .company-pill-icon { font-size: 20px; margin-bottom: 4px; }
+  .company-pill-name { font-size: 10px; font-weight: 700; color: var(--subtext); line-height: 1.3; }
+  .company-pill.selected .company-pill-name { color: var(--accent); }
+
+  /* ── START NUM ── */
+  .startnum-block {
+    padding: 12px 14px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .startnum-input {
+    flex: 1;
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    border-radius: var(--r-sm);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 18px;
+    font-weight: 700;
+    padding: 10px 12px;
+    outline: none;
+    text-align: center;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  .startnum-input:focus { border-color: var(--accent); }
+  .startnum-btn {
+    width: 44px; height: 44px;
+    background: var(--border);
+    border: none;
+    border-radius: var(--r-sm);
+    color: var(--text);
+    font-size: 20px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .startnum-hint { font-size: 11px; color: var(--subtext); padding: 0 14px 12px; }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.7);
+    backdrop-filter: blur(4px);
+    z-index: 200;
+    display: flex;
+    align-items: flex-end;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .25s;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    border-radius: 16px 16px 0 0;
+    width: 100%;
+    padding: 20px 16px 32px;
+    transform: translateY(100%);
+    transition: transform .3s cubic-bezier(.4,0,.2,1);
+  }
+  .modal-overlay.open .modal { transform: translateY(0); }
+  .modal-handle {
+    width: 36px; height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    margin: 0 auto 16px;
+  }
+  .modal-title { font-size: 16px; font-weight: 800; margin-bottom: 4px; }
+  .modal-sub   { font-size: 12px; color: var(--subtext); margin-bottom: 16px; }
+  .modal-input {
+    width: 100%;
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: var(--r-sm);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 15px;
+    padding: 12px 14px;
+    outline: none;
+    margin-bottom: 12px;
+    -webkit-appearance: none;
+  }
+  .modal-input:focus { border-color: var(--accent); }
+  .modal-input::placeholder { color: var(--muted); }
+  .modal-row { display: flex; gap: 8px; }
+  .modal-btn {
+    flex: 1;
+    padding: 13px;
+    border: none;
+    border-radius: var(--r-sm);
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity .15s;
+  }
+  .modal-btn:active { opacity: .7; }
+  .modal-btn.cancel { background: var(--border); color: var(--subtext); }
+  .modal-btn.confirm { background: var(--accent); color: #000; }
+
+  /* ── BOTTOM ACTION ── */
+  .bottom-bar {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: 12px 16px max(12px, env(safe-area-inset-bottom));
+    display: flex;
+    gap: 10px;
+    z-index: 150;
+  }
+  .btn-main {
+    flex: 1;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #000;
+    border: none;
+    border-radius: var(--r);
+    font-size: 15px;
+    font-weight: 800;
+    padding: 14px;
+    cursor: pointer;
+    letter-spacing: .3px;
+    transition: opacity .15s, transform .1s;
+  }
+  .btn-main:active { opacity: .8; transform: scale(.98); }
+  .btn-main:disabled { opacity: .35; cursor: default; transform: none; }
+  .btn-secondary {
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--subtext);
+    border-radius: var(--r);
+    font-size: 13px;
+    font-weight: 700;
+    padding: 14px 16px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  /* ── LOADER ── */
+  .loader-screen {
+    position: fixed; inset: 0;
+    background: var(--bg);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 16px;
+    z-index: 999;
+    transition: opacity .4s;
+  }
+  .loader-screen.hidden { opacity: 0; pointer-events: none; }
+  .loader-icon { font-size: 48px; animation: pulse 1.5s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.1);opacity:.7} }
+  .loader-text { font-size: 14px; color: var(--subtext); font-family: var(--mono); }
+
+  /* ── SUCCESS ── */
+  .success-screen {
+    position: fixed; inset: 0;
+    background: var(--bg);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 16px; padding: 32px;
+    z-index: 998;
+    opacity: 0; pointer-events: none;
+    transition: opacity .4s;
+  }
+  .success-screen.show { opacity: 1; pointer-events: all; }
+  .success-icon { font-size: 64px; animation: bounce .5s ease; }
+  @keyframes bounce { 0%{transform:scale(0)} 60%{transform:scale(1.15)} 100%{transform:scale(1)} }
+  .success-title { font-size: 22px; font-weight: 800; text-align: center; }
+  .success-sub   { font-size: 14px; color: var(--subtext); text-align: center; line-height: 1.5; }
+
+  /* ── MISC ── */
+  .divider { height: 1px; background: var(--border); margin: 4px 12px; }
+  .tag {
+    display: inline-block;
+    background: rgba(0,212,255,.12);
+    color: var(--accent);
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 6px;
+    letter-spacing: .5px;
+  }
+</style>
+</head>
+<body>
+
+<!-- LOADER -->
+<div class="loader-screen" id="loaderScreen">
+  <div class="loader-icon">⚓</div>
+  <div class="loader-text">Загрузка данных судна...</div>
+</div>
+
+<!-- SUCCESS -->
+<div class="success-screen" id="successScreen">
+  <div class="success-icon">✅</div>
+  <div class="success-title">Пакет запущен!</div>
+  <div class="success-sub" id="successText">Документы генерируются.<br>Бот пришлёт ZIP-архив.</div>
+</div>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-icon">⚙️</div>
+  <div>
+    <div class="header-title">Конвейер «Терминатор»</div>
+    <div class="header-sub" id="headerSub">v3.9 · Проверка данных</div>
+  </div>
+  <div class="header-status"></div>
+</div>
+
+<!-- VESSEL INFO -->
+<div class="section-label">🚢 Судно</div>
+<div class="card">
+  <div class="field" onclick="editField('vessel_name')">
+    <div class="field-icon">🚢</div>
+    <div class="field-body">
+      <div class="field-label">Название судна</div>
+      <div class="field-value" id="fld-vessel_name">—</div>
+    </div>
+    <div class="field-arrow">›</div>
+  </div>
+  <div class="field" onclick="editField('ship_type')">
+    <div class="field-icon">⛴</div>
+    <div class="field-body">
+      <div class="field-label">Тип судна</div>
+      <div class="field-value" id="fld-ship_type">—</div>
+    </div>
+    <div class="field-arrow">›</div>
+  </div>
+  <div class="field" onclick="editField('imo')">
+    <div class="field-icon">🔢</div>
+    <div class="field-body">
+      <div class="field-label">IMO</div>
+      <div class="field-value mono" id="fld-imo">—</div>
+    </div>
+    <div class="field-arrow">›</div>
+  </div>
+  <div class="field" onclick="editField('flag')">
+    <div class="field-icon">🏴</div>
+    <div class="field-body">
+      <div class="field-label">Флаг / Страна регистрации</div>
+      <div class="field-value" id="fld-flag">—</div>
+    </div>
+    <div class="field-arrow">›</div>
+  </div>
+  <div class="field" onclick="editField('owner')">
+    <div class="field-icon">🏢</div>
+    <div class="field-body">
+      <div class="field-label">Судовладелец</div>
+      <div class="field-value" id="fld-owner">—</div>
+    </div>
+    <div class="field-arrow">›</div>
+  </div>
+  <div class="field" onclick="editField('master_name')">
+    <div class="field-icon">👤</div>
+    <div class="field-body">
+      <div class="field-label">Капитан</div>
+      <div class="field-value" id="fld-master_name">—</div>
+    </div>
+    <div class="field-arrow">›</div>
+  </div>
+</div>
+
+<!-- DIMENSIONS -->
+<div class="section-label">📏 Размерения</div>
+<div class="card">
+  <div class="field" onclick="editField('loa')">
+    <div class="field-icon">📐</div>
+    <div class="field-body">
+      <div class="field-label">LOA — Длина наибольшая</div>
+      <div class="field-value mono" id="fld-loa">—</div>
+    </div>
+    <div class="field-arrow">›</div>
+  </div>
+  <div class="field" onclick="editField('breadth')">
+    <div class="field-icon">↔️</div>
+    <div class="field-body">
+      <div class="field-label">Breadth — Ширина</div>
+      <div class="field-value mono" id="fld-breadth">—</div>
+    </div>
+    <div class="field-arrow">›</div>
+  </div>
+  <div class="field" onclick="editDraft()">
+    <div class="field-icon">🌊</div>
+    <div class="field-body">
+      <div class="field-label">Осадка FWD / AFT</div>
+      <div class="field-value mono" id="fld-draft">—</div>
+    </div>
+    <div class="field-arrow">›</div>
+  </div>
+  <div class="computed-row">
+    <div class="computed-chip">
+      <div class="computed-chip-label">WSA</div>
+      <div class="computed-chip-val" id="chip-wsa">0</div>
+      <div class="computed-chip-unit">м²</div>
+    </div>
+    <div class="computed-chip">
+      <div class="computed-chip-label">Винт</div>
+      <div class="computed-chip-val" id="chip-prop">0</div>
+      <div class="computed-chip-unit">м²</div>
+    </div>
+  </div>
+</div>
+
+<!-- DATES & ACT -->
+<div class="section-label">📅 Даты и акт</div>
+<div class="card">
+  <div class="field" onclick="editField('act_number')">
+    <div class="field-icon">📜</div>
+    <div class="field-body">
+      <div class="field-label">Номер акта</div>
+      <div class="field-value mono ok" id="fld-act_number">—</div>
+    </div>
+    <div class="field-arrow">›</div>
+  </div>
+  <div class="field" onclick="editField('diving_date')">
+    <div class="field-icon">🤿</div>
+    <div class="field-body">
+      <div class="field-label">Дата осмотра (подхода)</div>
+      <div class="field-value mono" id="fld-diving_date">—</div>
+    </div>
+    <div class="field-arrow">›</div>
+  </div>
+  <div class="field" onclick="editField('date_start')">
+    <div class="field-icon">📆</div>
+    <div class="field-body">
+      <div class="field-label">Начало периода</div>
+      <div class="field-value mono" id="fld-date_start">—</div>
+    </div>
+    <div class="field-arrow">›</div>
+  </div>
+  <div class="field" onclick="editField('date_end')">
+    <div class="field-icon">📆</div>
+    <div class="field-body">
+      <div class="field-label">Конец периода</div>
+      <div class="field-value mono" id="fld-date_end">—</div>
+    </div>
+    <div class="field-arrow">›</div>
+  </div>
+</div>
+
+<!-- COMPANY -->
+<div class="section-label">🏢 Контрагент</div>
+<div class="card">
+  <div class="company-grid" id="companyGrid"></div>
+</div>
+
+<!-- START NUMBER -->
+<div class="section-label">🔢 Начальный номер документов</div>
+<div class="card">
+  <div class="startnum-block">
+    <button class="startnum-btn" onclick="changeNum(-1)">−</button>
+    <input class="startnum-input" type="number" id="startNum" value="146" min="1" inputmode="numeric">
+    <button class="startnum-btn" onclick="changeNum(1)">+</button>
+  </div>
+  <div class="startnum-hint" id="startNumHint">Рекомендуется: следующий после последнего в БД</div>
+</div>
+
+<!-- BOTTOM BAR -->
+<div class="bottom-bar">
+  <button class="btn-secondary" onclick="sendCancel()">✕</button>
+  <button class="btn-main" id="btnGenerate" onclick="sendData()">⚡ ГЕНЕРИРОВАТЬ ПАКЕТ</button>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal-overlay" id="editModal" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modalTitle">Редактировать</div>
+    <div class="modal-sub"  id="modalSub">Введите новое значение</div>
+    <input class="modal-input" id="modalInput" autocomplete="off" autocorrect="off" spellcheck="false">
+    <div class="modal-row">
+      <button class="modal-btn cancel"  onclick="closeModal()">Отмена</button>
+      <button class="modal-btn confirm" onclick="saveModal()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- DRAFT MODAL -->
+<div class="modal-overlay" id="draftModal" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Осадка FWD / AFT</div>
+    <div class="modal-sub">Введите осадку носом и кормой в метрах</div>
+    <input class="modal-input" id="draftFore" placeholder="FWD — нос" type="number" step="0.1" inputmode="decimal">
+    <input class="modal-input" id="draftAft"  placeholder="AFT — корма" type="number" step="0.1" inputmode="decimal">
+    <div class="modal-row">
+      <button class="modal-btn cancel"  onclick="closeDraftModal()">Отмена</button>
+      <button class="modal-btn confirm" onclick="saveDraft()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const tg = window.Telegram.WebApp;
+tg.expand();
+tg.enableClosingConfirmation();
+
+// ── STATE ──
+let state = {};
+let currentField = null;
+
+const COMPANIES = {
+  almar:   { title: "Альмар\nСервисиз",   icon: "⚓", short: "Альмар Сервисиз" },
+  zheldor: { title: "Желдор\nДоставка",   icon: "🚂", short: "ЖелдорДоставка" },
+  seagate: { title: "МА\nСИГЕЙТ",         icon: "🌊", short: "МА СИГЕЙТ" }
+};
+
+const FIELD_META = {
+  vessel_name:  { label: "Название судна",        hint: "Только название, без MV/MT",          upper: true },
+  ship_type:    { label: "Тип судна",              hint: "TANKER / BULK CARRIER / GENERAL CARGO / CONTAINER", upper: true },
+  imo:          { label: "IMO номер",              hint: "7 цифр, напр. 9123456",               upper: false },
+  flag:         { label: "Флаг / Страна",          hint: "Название страны на английском",       upper: true },
+  owner:        { label: "Судовладелец",           hint: "Полное наименование компании",        upper: true },
+  master_name:  { label: "ФИО Капитана",           hint: "Имя Фамилия заглавными",             upper: true },
+  loa:          { label: "LOA (м)",                hint: "Длина наибольшая, напр. 141.2",       upper: false },
+  breadth:      { label: "Breadth (м)",            hint: "Ширина наибольшая, напр. 22.8",       upper: false },
+  act_number:   { label: "Номер акта",             hint: "Формат: ДД/ММ/01",                   upper: false },
+  diving_date:  { label: "Дата осмотра",           hint: "Формат: ДД.ММ.ГГГГ",                 upper: false },
+  date_start:   { label: "Начало периода",         hint: "Формат: ДД.ММ.ГГГГ",                 upper: false },
+  date_end:     { label: "Конец периода",          hint: "Формат: ДД.ММ.ГГГГ",                 upper: false },
+};
+
+// ── INIT ──
+function init() {
+  // Читаем данные из initData или ищем в URL-параметрах
+  let raw = tg.initData || "";
+  let vesselData = null;
+
+  // Парсим данные переданные через start_param
+  try {
+    const params = new URLSearchParams(raw);
+    const startParam = params.get("start_param") || new URLSearchParams(location.search).get("data");
+    if (startParam) {
+      vesselData = JSON.parse(decodeURIComponent(atob(startParam)));
+    }
+  } catch(e) {}
+
+  // Fallback: тестовые данные для разработки
+  if (!vesselData) {
+    vesselData = {
+      vessel_name: "OCEAN PIONEER",
+      ship_type: "BULK CARRIER",
+      imo: "9876543",
+      flag: "PANAMA",
+      owner: "PACIFIC SHIPPING CO.",
+      master_name: "JOHN SMITH",
+      loa: "190.0",
+      breadth: "28.5",
+      draft_fore: "7.2",
+      draft_aft: "7.8",
+      act_number: "27/06/01",
+      diving_date: "27.06.2026",
+      date_start: "26.06.2026",
+      date_end: "30.06.2026",
+      current_date: "27.06.2026",
+      wetted_surface: "3820.5",
+      propeller_area: "60.0",
+      company_key: "",
+      last_doc_number: 145
+    };
+  }
+
+  state = { ...vesselData };
+  if (!state.company_key) state.company_key = "";
+
+  renderAll();
+  buildCompanyGrid();
+
+  const recNum = (parseInt(state.last_doc_number) || 145) + 1;
+  document.getElementById("startNum").value = recNum;
+  document.getElementById("startNumHint").textContent = `Рекомендуется: ${recNum} (следующий после последнего в БД)`;
+  document.getElementById("headerSub").textContent = `v3.9 · ${state.vessel_name || 'Без названия'}`;
+
+  setTimeout(() => {
+    document.getElementById("loaderScreen").classList.add("hidden");
+  }, 600);
+}
+
+// ── RENDER ──
+function renderAll() {
+  const set = (id, val, dim) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = val || "—";
+    el.classList.toggle("dim", !val || dim);
+  };
+
+  set("fld-vessel_name",  state.vessel_name);
+  set("fld-ship_type",    state.ship_type);
+  set("fld-imo",          state.imo);
+  set("fld-flag",         state.flag);
+  set("fld-owner",        state.owner);
+  set("fld-master_name",  state.master_name);
+  set("fld-loa",          state.loa ? state.loa + " м" : null);
+  set("fld-breadth",      state.breadth ? state.breadth + " м" : null);
+  set("fld-draft",        (state.draft_fore && state.draft_aft) ? `${state.draft_fore} / ${state.draft_aft} м` : null);
+  set("fld-act_number",   state.act_number);
+  set("fld-diving_date",  state.diving_date);
+  set("fld-date_start",   state.date_start);
+  set("fld-date_end",     state.date_end);
+
+  // WSA & Propeller
+  recalcWSA();
+}
+
+function recalcWSA() {
+  const loa = parseFloat(state.loa) || 0;
+  const b   = parseFloat(state.breadth) || 0;
+  const df  = parseFloat(state.draft_fore) || 0;
+  const da  = parseFloat(state.draft_aft) || 0;
+  const st  = (state.ship_type || "").toLowerCase();
+
+  let wsa = 0, prop = 0;
+  if (loa > 0 && b > 0) {
+    const lbp  = loa * 0.95;
+    const tavg = (df + da) / 2;
+    const cb   = st.includes("tanker") ? 0.81 : (st.includes("bulk") ? 0.80 : (st.includes("container") ? 0.65 : 0.75));
+    wsa = 1.02 * lbp * (cb * b + 1.7 * tavg);
+
+    if (st.includes("tanker") || st.includes("bulk"))
+      prop = loa > 300 ? 103 : (loa > 200 ? 60 : 26);
+    else if (st.includes("container"))
+      prop = loa > 180 ? 52.9 : 35;
+    else
+      prop = 13;
+  }
+
+  state.wetted_surface  = wsa.toFixed(2);
+  state.propeller_area  = prop.toFixed(2);
+  document.getElementById("chip-wsa").textContent  = wsa > 0 ? wsa.toFixed(0) : "—";
+  document.getElementById("chip-prop").textContent = prop > 0 ? prop.toFixed(1) : "—";
+}
+
+function buildCompanyGrid() {
+  const grid = document.getElementById("companyGrid");
+  grid.innerHTML = "";
+  for (const [key, co] of Object.entries(COMPANIES)) {
+    const el = document.createElement("div");
+    el.className = "company-pill" + (state.company_key === key ? " selected" : "");
+    el.innerHTML = `<div class="company-pill-icon">${co.icon}</div><div class="company-pill-name">${co.title}</div>`;
+    el.onclick = () => selectCompany(key, el);
+    grid.appendChild(el);
+  }
+}
+
+function selectCompany(key, el) {
+  state.company_key = key;
+  document.querySelectorAll(".company-pill").forEach(p => p.classList.remove("selected"));
+  el.classList.add("selected");
+  tg.HapticFeedback.selectionChanged();
+}
+
+// ── EDIT MODAL ──
+function editField(field) {
+  currentField = field;
+  const meta = FIELD_META[field];
+  document.getElementById("modalTitle").textContent = meta.label;
+  document.getElementById("modalSub").textContent   = meta.hint;
+  const inp = document.getElementById("modalInput");
+  inp.value = state[field] || "";
+  inp.type  = ["loa","breadth","imo"].includes(field) ? "text" : "text";
+  inp.inputMode = ["loa","breadth"].includes(field) ? "decimal" : "text";
+  document.getElementById("editModal").classList.add("open");
+  setTimeout(() => inp.focus(), 350);
+  tg.HapticFeedback.impactOccurred("light");
+}
+
+function editDraft() {
+  document.getElementById("draftFore").value = state.draft_fore || "";
+  document.getElementById("draftAft").value  = state.draft_aft  || "";
+  document.getElementById("draftModal").classList.add("open");
+  setTimeout(() => document.getElementById("draftFore").focus(), 350);
+  tg.HapticFeedback.impactOccurred("light");
+}
+
+function closeModal() {
+  document.getElementById("editModal").classList.remove("open");
+  document.getElementById("modalInput").blur();
+}
+
+function closeDraftModal() {
+  document.getElementById("draftModal").classList.remove("open");
+}
+
+function closeModalOutside(e) {
+  if (e.target === e.currentTarget) {
+    closeModal();
+    closeDraftModal();
+  }
+}
+
+function saveModal() {
+  const meta = FIELD_META[currentField];
+  let val = document.getElementById("modalInput").value.trim();
+  if (meta.upper) val = val.toUpperCase();
+  state[currentField] = val;
+  closeModal();
+  renderAll();
+  tg.HapticFeedback.impactOccurred("medium");
+}
+
+function saveDraft() {
+  state.draft_fore = document.getElementById("draftFore").value.trim().replace(",",".");
+  state.draft_aft  = document.getElementById("draftAft").value.trim().replace(",",".");
+  closeDraftModal();
+  renderAll();
+  tg.HapticFeedback.impactOccurred("medium");
+}
+
+// ── START NUM ──
+function changeNum(delta) {
+  const inp = document.getElementById("startNum");
+  inp.value = Math.max(1, (parseInt(inp.value) || 1) + delta);
+  tg.HapticFeedback.selectionChanged();
+}
+
+// ── SUBMIT ──
+function sendData() {
+  if (!state.company_key) {
+    tg.showAlert("Выберите компанию-контрагента перед генерацией пакета.");
+    return;
+  }
+
+  const startNum = parseInt(document.getElementById("startNum").value) || 146;
+  recalcWSA();
+
+  const payload = {
+    action: "generate",
+    vessel_name:  state.vessel_name,
+    ship_type:    state.ship_type,
+    imo:          state.imo,
+    flag:         state.flag,
+    owner:        state.owner,
+    master_name:  state.master_name,
+    loa:          state.loa,
+    breadth:      state.breadth,
+    draft_fore:   state.draft_fore,
+    draft_aft:    state.draft_aft,
+    act_number:   state.act_number,
+    diving_date:  state.diving_date,
+    date_start:   state.date_start,
+    date_end:     state.date_end,
+    current_date: state.current_date,
+    wetted_surface:  state.wetted_surface,
+    propeller_area:  state.propeller_area,
+    company_key:     state.company_key,
+    start_num:       startNum
+  };
+
+  document.getElementById("btnGenerate").disabled = true;
+
+  // Отправляем данные в бот
+  tg.sendData(JSON.stringify(payload));
+
+  // Показываем экран успеха
+  document.getElementById("successText").innerHTML =
+    `Судно: <b>${state.vessel_name}</b><br>Документы генерируются.<br>Бот пришлёт ZIP-архив.`;
+  document.getElementById("successScreen").classList.add("show");
+
+  tg.HapticFeedback.notificationOccurred("success");
+
+  setTimeout(() => tg.close(), 2500);
+}
+
+function sendCancel() {
+  tg.showConfirm("Отменить работу с этим судном?", (ok) => {
+    if (ok) {
+      tg.sendData(JSON.stringify({ action: "cancel" }));
+      tg.close();
+    }
+  });
+}
+
+// ── KEYBOARD: Enter в модалке ──
+document.getElementById("modalInput").addEventListener("keydown", e => {
+  if (e.key === "Enter") saveModal();
+});
+
+// ── START ──
+window.addEventListener("load", init);
+</script>
+</body>
+</html>
