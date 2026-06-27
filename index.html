@@ -7,7 +7,7 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
   :root {
-    --accent:       #d4ff00; /* Яркий салатовый как на скриншоте */
+    --accent:       #d4ff00; 
     --accent-dim:   rgba(212, 255, 0, 0.15);
     --glass-bg:     rgba(15, 20, 30, 0.45);
     --glass-border: rgba(255, 255, 255, 0.15);
@@ -29,19 +29,29 @@
     min-height: 100vh;
     padding-bottom: 90px;
     overscroll-behavior: none;
-    /* Морской фон */
     background-image: url('https://images.unsplash.com/photo-1551244072-5ddf1d17ea18?q=80&w=2000&auto=format&fit=crop');
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
   }
 
-  /* ── GLASSMORPHISM HELPERS ── */
   .glass {
     background: var(--glass-bg);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border: 1px solid var(--glass-border);
+  }
+
+  .view {
+    display: none;
+    animation: fadeIn 0.4s ease forwards;
+  }
+  .view.active {
+    display: block;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 
   /* ── HEADER ── */
@@ -69,495 +79,222 @@
   }
   .header-title { font-size: 15px; font-weight: 700; letter-spacing: .3px; text-shadow: 0 1px 3px rgba(0,0,0,0.5); }
   .header-sub { font-size: 11px; color: var(--subtext); margin-top: 1px; font-family: var(--mono); }
-  .header-status {
-    margin-left: auto;
-    width: 8px; height: 8px;
-    background: var(--accent);
-    border-radius: 50%;
-    box-shadow: 0 0 8px var(--accent);
-    flex-shrink: 0;
-  }
-
-  /* ── SECTION LABEL ── */
+  
+  /* ── COMPONENTS ── */
   .section-label {
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: var(--accent);
-    padding: 20px 16px 8px;
-    text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+    font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
+    text-transform: uppercase; color: var(--accent);
+    padding: 20px 16px 8px; text-shadow: 0 1px 4px rgba(0,0,0,0.8);
   }
 
-  /* ── CARD ── */
   .card {
-    border-radius: var(--r);
-    margin: 0 12px 10px;
-    overflow: hidden;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    border-radius: var(--r); margin: 0 12px 10px;
+    overflow: hidden; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
   }
 
-  /* ── FIELD ROW ── */
   .field {
-    display: flex;
-    align-items: center;
-    padding: 14px 14px;
-    border-bottom: 1px solid rgba(255,255,255,0.08);
-    gap: 12px;
-    cursor: pointer;
-    transition: background .15s;
-    -webkit-user-select: none; user-select: none;
+    display: flex; align-items: center; padding: 14px 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.08); gap: 12px;
+    cursor: pointer; transition: background .15s;
   }
   .field:last-child { border-bottom: none; }
   .field:active { background: rgba(255,255,255,0.1); }
   .field-icon { font-size: 16px; width: 22px; text-align: center; flex-shrink: 0; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4)); }
   .field-body { flex: 1; min-width: 0; }
   .field-label { font-size: 10px; color: var(--subtext); font-weight: 600; letter-spacing: .5px; text-transform: uppercase; margin-bottom: 4px; }
-  .field-value {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--text);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
-  }
+  .field-value { font-size: 14px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
   .field-value.mono { font-family: var(--mono); font-size: 13px; }
   .field-value.dim  { color: var(--subtext); font-weight: 400; font-style: italic; }
   .field-value.ok   { color: var(--accent); }
   .field-arrow { color: var(--subtext); font-size: 14px; flex-shrink: 0; }
 
-  /* ── COMPUTED BADGE ── */
-  .computed-row {
-    display: flex;
-    gap: 8px;
-    padding: 14px;
-    border-bottom: 1px solid rgba(255,255,255,0.08);
-  }
+  .computed-row { display: flex; gap: 8px; padding: 14px; border-bottom: 1px solid rgba(255,255,255,0.08); }
   .computed-row:last-child { border-bottom: none; }
-  .computed-chip {
-    flex: 1;
-    background: rgba(0,0,0,0.25);
-    border: 1px solid var(--glass-border);
-    border-radius: var(--r-sm);
-    padding: 10px;
-    text-align: center;
-  }
+  .computed-chip { flex: 1; background: rgba(0,0,0,0.25); border: 1px solid var(--glass-border); border-radius: var(--r-sm); padding: 10px; text-align: center; }
   .computed-chip-label { font-size: 9px; color: var(--subtext); letter-spacing: .8px; text-transform: uppercase; font-weight: 700; }
   .computed-chip-val { font-size: 16px; font-weight: 800; color: var(--accent); font-family: var(--mono); margin-top: 4px; text-shadow: 0 0 8px rgba(212,255,0,0.3); }
-  .computed-chip-unit { font-size: 9px; color: var(--subtext); }
 
-  /* ── COMPANY PILLS ── */
-  .company-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 8px;
-    padding: 14px;
-  }
-  .company-pill {
-    background: rgba(0,0,0,0.25);
-    border: 1px solid var(--glass-border);
-    border-radius: var(--r-sm);
-    padding: 12px 8px;
-    text-align: center;
-    cursor: pointer;
-    transition: all .2s;
-    -webkit-user-select: none; user-select: none;
-  }
+  .company-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; padding: 14px; }
+  .company-pill { background: rgba(0,0,0,0.25); border: 1px solid var(--glass-border); border-radius: var(--r-sm); padding: 12px 8px; text-align: center; cursor: pointer; transition: all .2s; }
   .company-pill:active { transform: scale(.96); }
-  .company-pill.selected {
-    border-color: var(--accent);
-    background: var(--accent-dim);
-    box-shadow: 0 0 10px var(--accent-dim);
-  }
+  .company-pill.selected { border-color: var(--accent); background: var(--accent-dim); box-shadow: 0 0 10px var(--accent-dim); }
   .company-pill-icon { font-size: 20px; margin-bottom: 6px; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.5)); }
   .company-pill-name { font-size: 10px; font-weight: 700; color: var(--subtext); line-height: 1.3; }
   .company-pill.selected .company-pill-name { color: var(--text); }
 
-  /* ── START NUM ── */
-  .startnum-block {
-    padding: 14px;
-    display: flex;
-    gap: 8px;
-    align-items: center;
-  }
-  .startnum-input {
-    flex: 1;
-    background: rgba(0,0,0,0.3);
-    border: 1px solid var(--glass-border);
-    border-radius: var(--r-sm);
-    color: var(--accent);
-    font-family: var(--mono);
-    font-size: 18px;
-    font-weight: 700;
-    padding: 12px;
-    outline: none;
-    text-align: center;
-    -webkit-appearance: none;
-    appearance: none;
-  }
-  .startnum-input:focus { border-color: var(--accent); box-shadow: 0 0 8px var(--accent-dim); }
-  .startnum-btn {
-    width: 46px; height: 46px;
-    background: rgba(0,0,0,0.3);
-    border: 1px solid var(--glass-border);
-    border-radius: var(--r-sm);
-    color: var(--text);
-    font-size: 20px;
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    transition: background 0.2s;
-  }
-  .startnum-btn:active { background: rgba(255,255,255,0.1); }
-  .startnum-hint { font-size: 11px; color: var(--subtext); padding: 0 14px 14px; }
-
-  /* ── MODAL ── */
-  .modal-overlay {
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.5);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-    z-index: 200;
-    display: flex;
-    align-items: flex-end;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity .3s ease;
-  }
-  .modal-overlay.open { opacity: 1; pointer-events: all; }
-  .modal {
-    background: rgba(15, 20, 30, 0.7);
-    backdrop-filter: blur(25px);
-    -webkit-backdrop-filter: blur(25px);
-    border-top: 1px solid var(--glass-border);
-    border-radius: 20px 20px 0 0;
-    width: 100%;
-    padding: 20px 16px 32px;
-    transform: translateY(100%);
-    transition: transform .4s cubic-bezier(.4,0,.2,1);
-    box-shadow: 0 -10px 40px rgba(0,0,0,0.4);
-  }
-  .modal-overlay.open .modal { transform: translateY(0); }
-  .modal-handle {
-    width: 40px; height: 5px;
-    background: rgba(255,255,255,0.3);
-    border-radius: 3px;
-    margin: 0 auto 20px;
-  }
-  .modal-title { font-size: 18px; font-weight: 800; margin-bottom: 4px; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
-  .modal-sub   { font-size: 12px; color: var(--subtext); margin-bottom: 20px; }
-  .modal-input {
-    width: 100%;
-    background: rgba(0,0,0,0.4);
-    border: 1px solid var(--glass-border);
-    border-radius: var(--r-sm);
-    color: var(--text);
-    font-family: var(--font);
-    font-size: 16px;
-    padding: 14px;
-    outline: none;
-    margin-bottom: 16px;
-    -webkit-appearance: none;
-  }
-  .modal-input:focus { border-color: var(--accent); box-shadow: 0 0 10px var(--accent-dim); }
-  .modal-input::placeholder { color: rgba(255,255,255,0.3); }
-  .modal-row { display: flex; gap: 10px; }
+  /* Списки почты */
+  .email-list { display: flex; flex-direction: column; gap: 8px; padding: 14px; }
+  .email-item { display: flex; align-items: center; gap: 12px; background: rgba(0,0,0,0.25); border: 1px solid var(--glass-border); padding: 14px; border-radius: var(--r-sm); cursor: pointer; transition: all 0.2s; }
+  .email-item.selected { border-color: var(--accent); background: var(--accent-dim); box-shadow: 0 0 10px var(--accent-dim); }
+  .email-icon { font-size: 20px; }
+  .email-info { flex: 1; }
+  .email-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+  .email-address { font-size: 11px; color: var(--subtext); font-family: var(--mono); }
   
-  /* ── BUTTONS (Скриншот стайл) ── */
-  .modal-btn {
-    flex: 1;
-    padding: 14px;
-    background: rgba(0,0,0,0.3);
-    border-radius: 30px;
-    font-size: 15px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all .2s;
-  }
-  .modal-btn:active { transform: scale(0.97); }
-  .modal-btn.cancel { 
-    border: 1px solid var(--glass-border); 
-    color: var(--text); 
-  }
-  .modal-btn.confirm { 
-    border: 1px solid var(--accent); 
-    color: var(--accent); 
-    box-shadow: 0 0 10px var(--accent-dim);
-  }
+  .startnum-block { padding: 14px; display: flex; gap: 8px; align-items: center; }
+  .startnum-input { flex: 1; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); border-radius: var(--r-sm); color: var(--accent); font-family: var(--mono); font-size: 18px; font-weight: 700; padding: 12px; outline: none; text-align: center; -webkit-appearance: none; appearance: none; }
+  .startnum-input:focus { border-color: var(--accent); box-shadow: 0 0 8px var(--accent-dim); }
+  .startnum-btn { width: 46px; height: 46px; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); border-radius: var(--r-sm); color: var(--text); font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
-  /* ── BOTTOM ACTION ── */
   .bottom-bar {
-    position: fixed;
-    bottom: 0; left: 0; right: 0;
-    background: rgba(10, 15, 25, 0.4);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: rgba(10, 15, 25, 0.4); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
     border-top: 1px solid var(--glass-border);
     padding: 14px 16px max(14px, env(safe-area-inset-bottom));
-    display: flex;
-    gap: 12px;
-    z-index: 150;
+    display: flex; gap: 12px; z-index: 150;
   }
   .btn-main {
-    flex: 1;
-    background: rgba(0,0,0,0.4);
-    border: 1px solid var(--accent);
-    color: var(--accent);
-    border-radius: 30px;
-    font-size: 15px;
-    font-weight: 700;
-    padding: 16px;
-    cursor: pointer;
-    letter-spacing: .5px;
-    transition: all .15s;
-    box-shadow: 0 4px 15px var(--accent-dim);
+    flex: 1; background: rgba(0,0,0,0.4); border: 1px solid var(--accent); color: var(--accent);
+    border-radius: 30px; font-size: 15px; font-weight: 700; padding: 16px; cursor: pointer;
+    letter-spacing: .5px; transition: all .15s; box-shadow: 0 4px 15px var(--accent-dim);
   }
   .btn-main:active { transform: scale(.97); background: var(--accent-dim); }
-  .btn-main:disabled { opacity: .4; cursor: default; transform: none; border-color: var(--glass-border); color: var(--subtext); box-shadow: none; }
-  
-  .btn-secondary {
-    background: rgba(0,0,0,0.4);
-    border: 1px solid var(--glass-border);
-    color: var(--text);
-    border-radius: 30px;
-    font-size: 14px;
-    font-weight: 700;
-    padding: 16px 20px;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: all .15s;
-  }
+  .btn-secondary { background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); color: var(--text); border-radius: 30px; font-size: 14px; font-weight: 700; padding: 16px 20px; cursor: pointer; white-space: nowrap; transition: all .15s; }
   .btn-secondary:active { transform: scale(.97); background: rgba(255,255,255,0.1); }
 
-  /* ── LOADER & SUCCESS SCREENS ── */
-  .fullscreen-overlay {
-    position: fixed; inset: 0;
-    background: rgba(10, 15, 25, 0.7);
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    gap: 16px; padding: 32px;
-    z-index: 999;
-    opacity: 0; pointer-events: none;
-    transition: opacity .4s;
+  .progress-container { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 70vh; padding: 32px; text-align: center; }
+  .spinner {
+    width: 80px; height: 80px; margin-bottom: 24px;
+    border: 4px solid var(--glass-border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    box-shadow: 0 0 20px var(--accent-dim);
   }
-  .fullscreen-overlay.show { opacity: 1; pointer-events: all; }
-  
-  .loader-icon { font-size: 56px; animation: pulse 1.5s ease-in-out infinite; filter: drop-shadow(0 0 10px rgba(0,0,0,0.5)); }
-  @keyframes pulse { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.1);opacity:.7} }
-  .loader-text { font-size: 15px; color: var(--text); font-family: var(--mono); text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+  @keyframes spin { 100% { transform: rotate(360deg); } }
+  .progress-title { font-size: 20px; font-weight: 800; color: var(--text); margin-bottom: 8px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+  .progress-sub { font-size: 14px; color: var(--subtext); font-family: var(--mono); }
 
-  .success-icon { font-size: 72px; animation: bounce .6s cubic-bezier(0.175, 0.885, 0.32, 1.275); filter: drop-shadow(0 0 15px rgba(0,224,150,0.5)); }
-  @keyframes bounce { 0%{transform:scale(0)} 100%{transform:scale(1)} }
-  .success-title { font-size: 24px; font-weight: 800; text-align: center; color: var(--accent); text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
-  .success-sub   { font-size: 15px; color: var(--text); text-align: center; line-height: 1.5; text-shadow: 0 1px 3px rgba(0,0,0,0.8); }
-
+  /* ── MODALS ── */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); z-index: 200; display: flex; align-items: flex-end; opacity: 0; pointer-events: none; transition: opacity .3s ease; }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal { background: rgba(15, 20, 30, 0.7); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border-top: 1px solid var(--glass-border); border-radius: 20px 20px 0 0; width: 100%; padding: 20px 16px 32px; transform: translateY(100%); transition: transform .4s cubic-bezier(.4,0,.2,1); box-shadow: 0 -10px 40px rgba(0,0,0,0.4); }
+  .modal-overlay.open .modal { transform: translateY(0); }
+  .modal-handle { width: 40px; height: 5px; background: rgba(255,255,255,0.3); border-radius: 3px; margin: 0 auto 20px; }
+  .modal-title { font-size: 18px; font-weight: 800; margin-bottom: 4px; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
+  .modal-sub   { font-size: 12px; color: var(--subtext); margin-bottom: 20px; }
+  .modal-input { width: 100%; background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); border-radius: var(--r-sm); color: var(--text); font-family: var(--font); font-size: 16px; padding: 14px; outline: none; margin-bottom: 16px; -webkit-appearance: none; }
+  .modal-input:focus { border-color: var(--accent); box-shadow: 0 0 10px var(--accent-dim); }
+  .modal-row { display: flex; gap: 10px; }
+  .modal-btn { flex: 1; padding: 14px; background: rgba(0,0,0,0.3); border-radius: 30px; font-size: 15px; font-weight: 700; cursor: pointer; transition: all .2s; }
+  .modal-btn.cancel { border: 1px solid var(--glass-border); color: var(--text); }
+  .modal-btn.confirm { border: 1px solid var(--accent); color: var(--accent); box-shadow: 0 0 10px var(--accent-dim); }
 </style>
 </head>
 <body>
 
-<!-- LOADER -->
-<div class="fullscreen-overlay show" id="loaderScreen">
-  <div class="loader-icon">⚓</div>
-  <div class="loader-text">Считываем глубины...</div>
-</div>
+<div id="viewMain" class="view active">
+  <div class="header">
+    <div class="header-icon">⚙️</div>
+    <div>
+      <div class="header-title">Конвейер «Терминатор»</div>
+      <div class="header-sub" id="headerSub">Редактор данных</div>
+    </div>
+  </div>
 
-<!-- SUCCESS -->
-<div class="fullscreen-overlay" id="successScreen">
-  <div class="success-icon">🌊</div>
-  <div class="success-title">Пакет запущен!</div>
-  <div class="success-sub" id="successText">Документы генерируются.<br>Бот пришлёт ZIP-архив.</div>
-</div>
+  <div class="section-label">🚢 Судно</div>
+  <div class="card glass">
+    <div class="field" onclick="editField('vessel_name')"><div class="field-icon">🚢</div><div class="field-body"><div class="field-label">Название судна</div><div class="field-value" id="fld-vessel_name">—</div></div><div class="field-arrow">›</div></div>
+    <div class="field" onclick="editField('ship_type')"><div class="field-icon">⛴</div><div class="field-body"><div class="field-label">Тип судна</div><div class="field-value" id="fld-ship_type">—</div></div><div class="field-arrow">›</div></div>
+    <div class="field" onclick="editField('imo')"><div class="field-icon">🔢</div><div class="field-body"><div class="field-label">IMO</div><div class="field-value mono" id="fld-imo">—</div></div><div class="field-arrow">›</div></div>
+    <div class="field" onclick="editField('flag')"><div class="field-icon">🏴</div><div class="field-body"><div class="field-label">Флаг</div><div class="field-value" id="fld-flag">—</div></div><div class="field-arrow">›</div></div>
+    <div class="field" onclick="editField('owner')"><div class="field-icon">🏢</div><div class="field-body"><div class="field-label">Судовладелец</div><div class="field-value" id="fld-owner">—</div></div><div class="field-arrow">›</div></div>
+    <div class="field" onclick="editField('master_name')"><div class="field-icon">👤</div><div class="field-body"><div class="field-label">Капитан</div><div class="field-value" id="fld-master_name">—</div></div><div class="field-arrow">›</div></div>
+  </div>
 
-<!-- HEADER -->
-<div class="header">
-  <div class="header-icon">⚙️</div>
-  <div>
-    <div class="header-title">Конвейер «Терминатор»</div>
-    <div class="header-sub" id="headerSub">v4.0 · Glass Edition</div>
+  <div class="section-label">📏 Размерения</div>
+  <div class="card glass">
+    <div class="field" onclick="editField('loa')"><div class="field-icon">📐</div><div class="field-body"><div class="field-label">LOA (м)</div><div class="field-value mono" id="fld-loa">—</div></div><div class="field-arrow">›</div></div>
+    <div class="field" onclick="editField('breadth')"><div class="field-icon">↔️</div><div class="field-body"><div class="field-label">Breadth (м)</div><div class="field-value mono" id="fld-breadth">—</div></div><div class="field-arrow">›</div></div>
+    <div class="field" onclick="editDraft()"><div class="field-icon">🌊</div><div class="field-body"><div class="field-label">Осадка FWD / AFT</div><div class="field-value mono" id="fld-draft">—</div></div><div class="field-arrow">›</div></div>
+    <div class="computed-row">
+      <div class="computed-chip"><div class="computed-chip-label">WSA</div><div class="computed-chip-val" id="chip-wsa">0</div></div>
+      <div class="computed-chip"><div class="computed-chip-label">Винт</div><div class="computed-chip-val" id="chip-prop">0</div></div>
+    </div>
   </div>
-  <div class="header-status"></div>
-</div>
 
-<!-- VESSEL INFO -->
-<div class="section-label">🚢 Судно</div>
-<div class="card glass">
-  <div class="field" onclick="editField('vessel_name')">
-    <div class="field-icon">🚢</div>
-    <div class="field-body">
-      <div class="field-label">Название судна</div>
-      <div class="field-value" id="fld-vessel_name">—</div>
-    </div>
-    <div class="field-arrow">›</div>
+  <div class="section-label">📅 Даты</div>
+  <div class="card glass">
+    <div class="field" onclick="editField('act_number')"><div class="field-icon">📜</div><div class="field-body"><div class="field-label">Номер акта</div><div class="field-value mono ok" id="fld-act_number">—</div></div><div class="field-arrow">›</div></div>
+    <div class="field" onclick="editField('diving_date')"><div class="field-icon">🤿</div><div class="field-body"><div class="field-label">Дата осмотра</div><div class="field-value mono" id="fld-diving_date">—</div></div><div class="field-arrow">›</div></div>
   </div>
-  <div class="field" onclick="editField('ship_type')">
-    <div class="field-icon">⛴</div>
-    <div class="field-body">
-      <div class="field-label">Тип судна</div>
-      <div class="field-value" id="fld-ship_type">—</div>
+
+  <div class="section-label">🏢 Контрагент</div>
+  <div class="card glass"><div class="company-grid" id="companyGrid"></div></div>
+
+  <div class="section-label">🔢 Стартовый номер документов</div>
+  <div class="card glass">
+    <div class="startnum-block">
+      <button class="startnum-btn" onclick="changeNum(-1)">−</button>
+      <input class="startnum-input" type="number" id="startNum" value="146">
+      <button class="startnum-btn" onclick="changeNum(1)">+</button>
     </div>
-    <div class="field-arrow">›</div>
   </div>
-  <div class="field" onclick="editField('imo')">
-    <div class="field-icon">🔢</div>
-    <div class="field-body">
-      <div class="field-label">IMO</div>
-      <div class="field-value mono" id="fld-imo">—</div>
-    </div>
-    <div class="field-arrow">›</div>
-  </div>
-  <div class="field" onclick="editField('flag')">
-    <div class="field-icon">🏴</div>
-    <div class="field-body">
-      <div class="field-label">Флаг / Регистрация</div>
-      <div class="field-value" id="fld-flag">—</div>
-    </div>
-    <div class="field-arrow">›</div>
-  </div>
-  <div class="field" onclick="editField('owner')">
-    <div class="field-icon">🏢</div>
-    <div class="field-body">
-      <div class="field-label">Судовладелец</div>
-      <div class="field-value" id="fld-owner">—</div>
-    </div>
-    <div class="field-arrow">›</div>
-  </div>
-  <div class="field" onclick="editField('master_name')">
-    <div class="field-icon">👤</div>
-    <div class="field-body">
-      <div class="field-label">Капитан</div>
-      <div class="field-value" id="fld-master_name">—</div>
-    </div>
-    <div class="field-arrow">›</div>
+
+  <div class="bottom-bar">
+    <button class="btn-secondary" onclick="sendCancel()">✕ Отмена</button>
+    <button class="btn-main" onclick="startGenerationFlow()">СГЕНЕРИРОВАТЬ</button>
   </div>
 </div>
 
-<!-- DIMENSIONS -->
-<div class="section-label">📏 Размерения</div>
-<div class="card glass">
-  <div class="field" onclick="editField('loa')">
-    <div class="field-icon">📐</div>
-    <div class="field-body">
-      <div class="field-label">Длина (LOA)</div>
-      <div class="field-value mono" id="fld-loa">—</div>
-    </div>
-    <div class="field-arrow">›</div>
-  </div>
-  <div class="field" onclick="editField('breadth')">
-    <div class="field-icon">↔️</div>
-    <div class="field-body">
-      <div class="field-label">Ширина (Breadth)</div>
-      <div class="field-value mono" id="fld-breadth">—</div>
-    </div>
-    <div class="field-arrow">›</div>
-  </div>
-  <div class="field" onclick="editDraft()">
-    <div class="field-icon">🌊</div>
-    <div class="field-body">
-      <div class="field-label">Осадка FWD / AFT</div>
-      <div class="field-value mono" id="fld-draft">—</div>
-    </div>
-    <div class="field-arrow">›</div>
-  </div>
-  <div class="computed-row">
-    <div class="computed-chip">
-      <div class="computed-chip-label">WSA</div>
-      <div class="computed-chip-val" id="chip-wsa">0</div>
-      <div class="computed-chip-unit">м²</div>
-    </div>
-    <div class="computed-chip">
-      <div class="computed-chip-label">Винт</div>
-      <div class="computed-chip-val" id="chip-prop">0</div>
-      <div class="computed-chip-unit">м²</div>
-    </div>
+<div id="viewProgress" class="view">
+  <div class="progress-container glass" style="margin: 32px 16px; border-radius: 20px;">
+    <div class="spinner"></div>
+    <div class="progress-title" id="progressTitle">Инициализация...</div>
+    <div class="progress-sub" id="progressSub">Чтение данных</div>
   </div>
 </div>
 
-<!-- DATES & ACT -->
-<div class="section-label">📅 Даты и акт</div>
-<div class="card glass">
-  <div class="field" onclick="editField('act_number')">
-    <div class="field-icon">📜</div>
-    <div class="field-body">
-      <div class="field-label">Номер акта</div>
-      <div class="field-value mono ok" id="fld-act_number">—</div>
+<div id="viewSummary" class="view">
+  <div class="header">
+    <div class="header-icon">✅</div>
+    <div>
+      <div class="header-title">Готово к отправке</div>
+      <div class="header-sub">Выберите получателя</div>
     </div>
-    <div class="field-arrow">›</div>
   </div>
-  <div class="field" onclick="editField('diving_date')">
-    <div class="field-icon">🤿</div>
-    <div class="field-body">
-      <div class="field-label">Дата осмотра</div>
-      <div class="field-value mono" id="fld-diving_date">—</div>
-    </div>
-    <div class="field-arrow">›</div>
+
+  <div class="section-label">📋 Сводка</div>
+  <div class="card glass">
+    <div class="field"><div class="field-icon">🚢</div><div class="field-body"><div class="field-label">Судно</div><div class="field-value" id="sumVessel">—</div></div></div>
+    <div class="field"><div class="field-icon">🏢</div><div class="field-body"><div class="field-label">Контрагент</div><div class="field-value" id="sumCompany">—</div></div></div>
+    <div class="field"><div class="field-icon">📄</div><div class="field-body"><div class="field-label">Документов в архиве</div><div class="field-value mono">Полный пакет (.docx + .pdf)</div></div></div>
   </div>
-  <div class="field" onclick="editField('date_start')">
-    <div class="field-icon">📆</div>
-    <div class="field-body">
-      <div class="field-label">Начало периода</div>
-      <div class="field-value mono" id="fld-date_start">—</div>
+
+  <div class="section-label">📧 Отправить пакет на почту</div>
+  <div class="card glass">
+    <div class="email-list" id="emailList">
+      <!-- Генерируется через JS -->
     </div>
-    <div class="field-arrow">›</div>
   </div>
-  <div class="field" onclick="editField('date_end')">
-    <div class="field-icon">📆</div>
-    <div class="field-body">
-      <div class="field-label">Конец периода</div>
-      <div class="field-value mono" id="fld-date_end">—</div>
-    </div>
-    <div class="field-arrow">›</div>
+
+  <div class="bottom-bar">
+    <button class="btn-main" onclick="finishAndSend()">🚀 ЗАВЕРШИТЬ И ОТПРАВИТЬ</button>
   </div>
 </div>
 
-<!-- COMPANY -->
-<div class="section-label">🏢 Контрагент</div>
-<div class="card glass">
-  <div class="company-grid" id="companyGrid"></div>
-</div>
-
-<!-- START NUMBER -->
-<div class="section-label">🔢 Номер документов</div>
-<div class="card glass">
-  <div class="startnum-block">
-    <button class="startnum-btn" onclick="changeNum(-1)">−</button>
-    <input class="startnum-input" type="number" id="startNum" value="146" min="1" inputmode="numeric">
-    <button class="startnum-btn" onclick="changeNum(1)">+</button>
-  </div>
-  <div class="startnum-hint" id="startNumHint">Рекомендуется: следующий в БД</div>
-</div>
-
-<!-- BOTTOM BAR -->
-<div class="bottom-bar">
-  <button class="btn-secondary" onclick="sendCancel()">✕ Отмена</button>
-  <button class="btn-main" id="btnGenerate" onclick="sendData()">⚡ ГЕНЕРИРОВАТЬ</button>
-</div>
-
-<!-- EDIT MODAL -->
 <div class="modal-overlay" id="editModal" onclick="closeModalOutside(event)">
   <div class="modal">
     <div class="modal-handle"></div>
     <div class="modal-title" id="modalTitle">Редактировать</div>
-    <div class="modal-sub"  id="modalSub">Введите новое значение</div>
+    <div class="modal-sub" id="modalSub">Введите новое значение</div>
     <input class="modal-input" id="modalInput" autocomplete="off" autocorrect="off" spellcheck="false">
     <div class="modal-row">
-      <button class="modal-btn cancel"  onclick="closeModal()">Отмена</button>
+      <button class="modal-btn cancel" onclick="closeModal()">Отмена</button>
       <button class="modal-btn confirm" onclick="saveModal()">Сохранить</button>
     </div>
   </div>
 </div>
 
-<!-- DRAFT MODAL -->
 <div class="modal-overlay" id="draftModal" onclick="closeModalOutside(event)">
   <div class="modal">
     <div class="modal-handle"></div>
     <div class="modal-title">Осадка FWD / AFT</div>
     <div class="modal-sub">Введите осадку носом и кормой (м)</div>
-    <input class="modal-input" id="draftFore" placeholder="FWD — нос" type="number" step="0.1" inputmode="decimal">
-    <input class="modal-input" id="draftAft"  placeholder="AFT — корма" type="number" step="0.1" inputmode="decimal">
+    <input class="modal-input" id="draftFore" placeholder="FWD — нос" type="number" step="0.1">
+    <input class="modal-input" id="draftAft" placeholder="AFT — корма" type="number" step="0.1">
     <div class="modal-row">
-      <button class="modal-btn cancel"  onclick="closeDraftModal()">Отмена</button>
+      <button class="modal-btn cancel" onclick="closeDraftModal()">Отмена</button>
       <button class="modal-btn confirm" onclick="saveDraft()">Сохранить</button>
     </div>
   </div>
@@ -568,273 +305,156 @@ const tg = window.Telegram.WebApp;
 tg.expand();
 tg.enableClosingConfirmation();
 
-// ── STATE ──
 let state = {};
 let currentField = null;
+let selectedEmail = ""; 
 
 const COMPANIES = {
-  almar:   { title: "Альмар\nСервисиз",   icon: "⚓", short: "Альмар Сервисиз" },
-  zheldor: { title: "Желдор\nДоставка",   icon: "🚂", short: "ЖелдорДоставка" },
-  seagate: { title: "МА\nСИГЕЙТ",         icon: "🌊", short: "МА СИГЕЙТ" }
+  almar:   { title: "Альмар Сервисиз", icon: "⚓", short: "Альмар Сервисиз" },
+  zheldor: { title: "ЖелдорДоставка",  icon: "🚂", short: "ЖелдорДоставка" },
+  seagate: { title: "МА СИГЕЙТ",       icon: "🌊", short: "МА СИГЕЙТ" }
 };
+
+const EMAILS = [
+  { id: "e1", email: "aquatechexpert@mail.ru", label: "AquaTech Expert" },
+  { id: "e2", email: "agent@zddrostov.com", label: "Агент Желдор" },
+  { id: "e3", email: "agent@seagatenvr.ru", label: "Агент Seagate" },
+  { id: "e4", email: "maritimenvrsk@mail.ru", label: "Maritime NVR" },
+  { id: "e_none", email: "NONE", label: "❌ Не отправлять (только ZIP в чат)" }
+];
 
 const FIELD_META = {
-  vessel_name:  { label: "Название судна",        hint: "Только название, без MV/MT",          upper: true },
-  ship_type:    { label: "Тип судна",              hint: "TANKER / BULK CARRIER / GENERAL CARGO / CONTAINER", upper: true },
-  imo:          { label: "IMO номер",              hint: "7 цифр, напр. 9123456",               upper: false },
-  flag:         { label: "Флаг / Страна",          hint: "Название страны на английском",       upper: true },
-  owner:        { label: "Судовладелец",           hint: "Полное наименование компании",        upper: true },
-  master_name:  { label: "ФИО Капитана",           hint: "Имя Фамилия заглавными",             upper: true },
-  loa:          { label: "LOA (м)",                hint: "Длина наибольшая, напр. 141.2",       upper: false },
-  breadth:      { label: "Breadth (м)",            hint: "Ширина наибольшая, напр. 22.8",       upper: false },
-  act_number:   { label: "Номер акта",             hint: "Формат: ДД/ММ/01",                   upper: false },
-  diving_date:  { label: "Дата осмотра",           hint: "Формат: ДД.ММ.ГГГГ",                 upper: false },
-  date_start:   { label: "Начало периода",         hint: "Формат: ДД.ММ.ГГГГ",                 upper: false },
-  date_end:     { label: "Конец периода",          hint: "Формат: ДД.ММ.ГГГГ",                 upper: false },
+  vessel_name:  { label: "Название судна", hint: "Только название, без MV/MT", upper: true },
+  ship_type:    { label: "Тип судна", hint: "TANKER / BULK CARRIER / GENERAL CARGO", upper: true },
+  imo:          { label: "IMO номер", hint: "7 цифр", upper: false },
+  flag:         { label: "Флаг / Страна", hint: "На английском", upper: true },
+  owner:        { label: "Судовладелец", hint: "Полное наименование", upper: true },
+  master_name:  { label: "ФИО Капитана", hint: "Имя Фамилия", upper: true },
+  loa:          { label: "LOA (м)", hint: "Длина", upper: false },
+  breadth:      { label: "Breadth (м)", hint: "Ширина", upper: false },
+  act_number:   { label: "Номер акта", hint: "Формат: ДД/ММ/01", upper: false },
+  diving_date:  { label: "Дата осмотра", hint: "Формат: ДД.ММ.ГГГГ", upper: false }
 };
 
-// ── INIT ──
 function init() {
   let raw = tg.initData || "";
   let vesselData = null;
-
   try {
     const params = new URLSearchParams(raw);
     const startParam = params.get("start_param") || new URLSearchParams(location.search).get("data");
-    if (startParam) {
-      vesselData = JSON.parse(decodeURIComponent(atob(startParam)));
-    }
+    if (startParam) vesselData = JSON.parse(decodeURIComponent(atob(startParam)));
   } catch(e) {}
 
   if (!vesselData) {
-    vesselData = {
-      vessel_name: "OCEAN PIONEER",
-      ship_type: "BULK CARRIER",
-      imo: "9876543",
-      flag: "PANAMA",
-      owner: "PACIFIC SHIPPING CO.",
-      master_name: "JOHN SMITH",
-      loa: "190.0",
-      breadth: "28.5",
-      draft_fore: "7.2",
-      draft_aft: "7.8",
-      act_number: "27/06/01",
-      diving_date: "27.06.2026",
-      date_start: "26.06.2026",
-      date_end: "30.06.2026",
-      current_date: "27.06.2026",
-      wetted_surface: "3820.5",
-      propeller_area: "60.0",
-      company_key: "",
-      last_doc_number: 145
-    };
+    vesselData = { vessel_name: "OCEAN PIONEER", ship_type: "BULK CARRIER", imo: "9876543", flag: "PANAMA", owner: "PACIFIC SHIPPING", master_name: "JOHN SMITH", loa: "190.0", breadth: "28.5", draft_fore: "7.2", draft_aft: "7.8", act_number: "27/06/01", diving_date: "27.06.2026", date_start: "26.06.2026", date_end: "30.06.2026", last_doc_number: 145 };
   }
-
-  state = { ...vesselData };
-  if (!state.company_key) state.company_key = "";
+  state = { ...vesselData, company_key: vesselData.company_key || "" };
 
   renderAll();
   buildCompanyGrid();
-
-  const recNum = (parseInt(state.last_doc_number) || 145) + 1;
-  document.getElementById("startNum").value = recNum;
-  document.getElementById("startNumHint").textContent = `Рекомендуется: ${recNum}`;
-  document.getElementById("headerSub").textContent = `${state.vessel_name || 'Без названия'} · Проверка`;
-
-  setTimeout(() => {
-    document.getElementById("loaderScreen").classList.remove("show");
-  }, 700);
+  buildEmailList();
+  document.getElementById("startNum").value = (parseInt(state.last_doc_number) || 145) + 1;
 }
 
-// ── RENDER ──
 function renderAll() {
-  const set = (id, val, dim) => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.textContent = val || "—";
-    el.classList.toggle("dim", !val || dim);
-  };
-
-  set("fld-vessel_name",  state.vessel_name);
-  set("fld-ship_type",    state.ship_type);
-  set("fld-imo",          state.imo);
-  set("fld-flag",         state.flag);
-  set("fld-owner",        state.owner);
-  set("fld-master_name",  state.master_name);
-  set("fld-loa",          state.loa ? state.loa + " м" : null);
-  set("fld-breadth",      state.breadth ? state.breadth + " м" : null);
-  set("fld-draft",        (state.draft_fore && state.draft_aft) ? `${state.draft_fore} / ${state.draft_aft} м` : null);
-  set("fld-act_number",   state.act_number);
-  set("fld-diving_date",  state.diving_date);
-  set("fld-date_start",   state.date_start);
-  set("fld-date_end",     state.date_end);
-
-  recalcWSA();
-}
-
-function recalcWSA() {
-  const loa = parseFloat(state.loa) || 0;
-  const b   = parseFloat(state.breadth) || 0;
-  const df  = parseFloat(state.draft_fore) || 0;
-  const da  = parseFloat(state.draft_aft) || 0;
-  const st  = (state.ship_type || "").toLowerCase();
-
+  const set = (id, val) => { const el = document.getElementById(id); if (el) { el.textContent = val || "—"; el.classList.toggle("dim", !val); } };
+  set("fld-vessel_name", state.vessel_name); set("fld-ship_type", state.ship_type); set("fld-imo", state.imo);
+  set("fld-flag", state.flag); set("fld-owner", state.owner); set("fld-master_name", state.master_name);
+  set("fld-loa", state.loa ? state.loa + " м" : null); set("fld-breadth", state.breadth ? state.breadth + " м" : null);
+  set("fld-draft", (state.draft_fore && state.draft_aft) ? `${state.draft_fore} / ${state.draft_aft} м` : null);
+  set("fld-act_number", state.act_number); set("fld-diving_date", state.diving_date);
+  
   let wsa = 0, prop = 0;
-  if (loa > 0 && b > 0) {
-    const lbp  = loa * 0.95;
-    const tavg = (df + da) / 2;
-    const cb   = st.includes("tanker") ? 0.81 : (st.includes("bulk") ? 0.80 : (st.includes("container") ? 0.65 : 0.75));
-    wsa = 1.02 * lbp * (cb * b + 1.7 * tavg);
-
-    if (st.includes("tanker") || st.includes("bulk"))
-      prop = loa > 300 ? 103 : (loa > 200 ? 60 : 26);
-    else if (st.includes("container"))
-      prop = loa > 180 ? 52.9 : 35;
-    else
-      prop = 13;
+  if (state.loa > 0 && state.breadth > 0) {
+    const tavg = (parseFloat(state.draft_fore) + parseFloat(state.draft_aft)) / 2;
+    wsa = 1.02 * (state.loa * 0.95) * (0.80 * state.breadth + 1.7 * tavg);
+    prop = state.loa > 200 ? 60 : 26;
   }
-
-  state.wetted_surface  = wsa.toFixed(2);
-  state.propeller_area  = prop.toFixed(2);
-  document.getElementById("chip-wsa").textContent  = wsa > 0 ? wsa.toFixed(0) : "—";
+  state.wetted_surface = wsa.toFixed(2); state.propeller_area = prop.toFixed(2);
+  document.getElementById("chip-wsa").textContent = wsa > 0 ? wsa.toFixed(0) : "—";
   document.getElementById("chip-prop").textContent = prop > 0 ? prop.toFixed(1) : "—";
 }
 
 function buildCompanyGrid() {
-  const grid = document.getElementById("companyGrid");
-  grid.innerHTML = "";
+  const grid = document.getElementById("companyGrid"); grid.innerHTML = "";
   for (const [key, co] of Object.entries(COMPANIES)) {
     const el = document.createElement("div");
     el.className = "company-pill" + (state.company_key === key ? " selected" : "");
     el.innerHTML = `<div class="company-pill-icon">${co.icon}</div><div class="company-pill-name">${co.title}</div>`;
-    el.onclick = () => selectCompany(key, el);
+    el.onclick = () => { state.company_key = key; document.querySelectorAll(".company-pill").forEach(p => p.classList.remove("selected")); el.classList.add("selected"); tg.HapticFeedback.selectionChanged(); };
     grid.appendChild(el);
   }
 }
 
-function selectCompany(key, el) {
-  state.company_key = key;
-  document.querySelectorAll(".company-pill").forEach(p => p.classList.remove("selected"));
-  el.classList.add("selected");
-  tg.HapticFeedback.selectionChanged();
-}
-
-// ── EDIT MODAL ──
-function editField(field) {
-  currentField = field;
-  const meta = FIELD_META[field];
-  document.getElementById("modalTitle").textContent = meta.label;
-  document.getElementById("modalSub").textContent   = meta.hint;
-  const inp = document.getElementById("modalInput");
-  inp.value = state[field] || "";
-  inp.type  = ["loa","breadth","imo"].includes(field) ? "text" : "text";
-  inp.inputMode = ["loa","breadth"].includes(field) ? "decimal" : "text";
-  document.getElementById("editModal").classList.add("open");
-  setTimeout(() => inp.focus(), 350);
-  tg.HapticFeedback.impactOccurred("light");
-}
-
-function editDraft() {
-  document.getElementById("draftFore").value = state.draft_fore || "";
-  document.getElementById("draftAft").value  = state.draft_aft  || "";
-  document.getElementById("draftModal").classList.add("open");
-  setTimeout(() => document.getElementById("draftFore").focus(), 350);
-  tg.HapticFeedback.impactOccurred("light");
-}
-
-function closeModal() {
-  document.getElementById("editModal").classList.remove("open");
-  document.getElementById("modalInput").blur();
-}
-
-function closeDraftModal() {
-  document.getElementById("draftModal").classList.remove("open");
-}
-
-function closeModalOutside(e) {
-  if (e.target === e.currentTarget) {
-    closeModal();
-    closeDraftModal();
-  }
-}
-
-function saveModal() {
-  const meta = FIELD_META[currentField];
-  let val = document.getElementById("modalInput").value.trim();
-  if (meta.upper) val = val.toUpperCase();
-  state[currentField] = val;
-  closeModal();
-  renderAll();
-  tg.HapticFeedback.impactOccurred("medium");
-}
-
-function saveDraft() {
-  state.draft_fore = document.getElementById("draftFore").value.trim().replace(",",".");
-  state.draft_aft  = document.getElementById("draftAft").value.trim().replace(",",".");
-  closeDraftModal();
-  renderAll();
-  tg.HapticFeedback.impactOccurred("medium");
-}
-
-// ── START NUM ──
-function changeNum(delta) {
-  const inp = document.getElementById("startNum");
-  inp.value = Math.max(1, (parseInt(inp.value) || 1) + delta);
-  tg.HapticFeedback.selectionChanged();
-}
-
-// ── SUBMIT ──
-function sendData() {
-  if (!state.company_key) {
-    tg.showAlert("Выберите компанию-контрагента перед генерацией пакета.");
-    return;
-  }
-
-  const startNum = parseInt(document.getElementById("startNum").value) || 146;
-  recalcWSA();
-
-  const payload = {
-    action: "generate",
-    ...state,
-    start_num: startNum
-  };
-
-  const btn = document.getElementById("btnGenerate");
-  btn.disabled = true;
-  btn.textContent = "⏳ Отправка...";
-
-  // Показываем экран успеха ЗАРАНЕЕ, так как tg.sendData мгновенно закроет апп или бросит ошибку
-  document.getElementById("successText").innerHTML =
-    `Судно: <b>${state.vessel_name}</b><br>Документы генерируются.<br>Ожидайте бота...`;
-  document.getElementById("successScreen").classList.add("show");
-  tg.HapticFeedback.notificationOccurred("success");
-
-  // Блокируем ошибку в консоли, если sendData провалится
-  try {
-    tg.sendData(JSON.stringify(payload));
-  } catch (err) {
-    console.warn("tg.sendData() failed, likely due to InlineKeyboardButton context.");
-  }
-  
-  // Принудительно закроем апп (если sendData не закрыл)
-  setTimeout(() => tg.close(), 2500);
-}
-
-function sendCancel() {
-  tg.showConfirm("Отменить работу с этим судном?", (ok) => {
-    if (ok) {
-      try { tg.sendData(JSON.stringify({ action: "cancel" })); } catch(e){}
-      tg.close();
-    }
+function buildEmailList() {
+  const list = document.getElementById("emailList"); list.innerHTML = "";
+  selectedEmail = EMAILS[0].email; // По умолчанию первый
+  EMAILS.forEach(em => {
+    const el = document.createElement("div");
+    el.className = "email-item" + (selectedEmail === em.email ? " selected" : "");
+    el.innerHTML = `<div class="email-icon">📬</div><div class="email-info"><div class="email-title">${em.label}</div><div class="email-address">${em.email === 'NONE' ? 'Только локально' : em.email}</div></div>`;
+    el.onclick = () => { selectedEmail = em.email; document.querySelectorAll(".email-item").forEach(p => p.classList.remove("selected")); el.classList.add("selected"); tg.HapticFeedback.selectionChanged(); };
+    list.appendChild(el);
   });
 }
 
-// ── KEYBOARD: Enter ──
-document.getElementById("modalInput").addEventListener("keydown", e => {
-  if (e.key === "Enter") saveModal();
-});
+function editField(f) { currentField = f; document.getElementById("modalTitle").textContent = FIELD_META[f].label; document.getElementById("modalSub").textContent = FIELD_META[f].hint; const i = document.getElementById("modalInput"); i.value = state[f] || ""; document.getElementById("editModal").classList.add("open"); setTimeout(()=>i.focus(), 300); }
+function editDraft() { document.getElementById("draftFore").value = state.draft_fore || ""; document.getElementById("draftAft").value = state.draft_aft || ""; document.getElementById("draftModal").classList.add("open"); }
+function closeModal() { document.getElementById("editModal").classList.remove("open"); }
+function closeDraftModal() { document.getElementById("draftModal").classList.remove("open"); }
+function closeModalOutside(e) { if(e.target === e.currentTarget) { closeModal(); closeDraftModal(); } }
+function saveModal() { let v = document.getElementById("modalInput").value.trim(); if(FIELD_META[currentField].upper) v = v.toUpperCase(); state[currentField] = v; closeModal(); renderAll(); tg.HapticFeedback.impactOccurred("medium"); }
+function saveDraft() { state.draft_fore = document.getElementById("draftFore").value.replace(",","."); state.draft_aft = document.getElementById("draftAft").value.replace(",","."); closeDraftModal(); renderAll(); }
+function changeNum(d) { const i = document.getElementById("startNum"); i.value = Math.max(1, parseInt(i.value||1)+d); tg.HapticFeedback.selectionChanged(); }
 
-// ── START ──
+function startGenerationFlow() {
+  if (!state.company_key) return tg.showAlert("Выберите контрагента!");
+  
+  // Переход на экран загрузки
+  document.getElementById("viewMain").classList.remove("active");
+  document.getElementById("viewProgress").classList.add("active");
+  tg.HapticFeedback.notificationOccurred("success");
+
+  // Имитируем процесс генерации документов
+  const steps = [
+    { title: "Генерация Word...", sub: "Подстановка данных судна", time: 1000 },
+    { title: "Конвертация...", sub: "Перевод в формат PDF", time: 2500 },
+    { title: "Сборка архива...", sub: "Формирование ZIP пакета", time: 4000 }
+  ];
+
+  steps.forEach(step => {
+    setTimeout(() => {
+      document.getElementById("progressTitle").textContent = step.title;
+      document.getElementById("progressSub").textContent = step.sub;
+      tg.HapticFeedback.impactOccurred("light");
+    }, step.time);
+  });
+
+  // Завершение имитации и переход к экрану сводки
+  setTimeout(() => {
+    document.getElementById("sumVessel").textContent = state.vessel_name;
+    document.getElementById("sumCompany").textContent = COMPANIES[state.company_key].short;
+    
+    document.getElementById("viewProgress").classList.remove("active");
+    document.getElementById("viewSummary").classList.add("active");
+    tg.HapticFeedback.notificationOccurred("success");
+  }, 5500);
+}
+
+function finishAndSend() {
+  const payload = {
+    action: "generate",
+    ...state,
+    start_num: parseInt(document.getElementById("startNum").value) || 146,
+    email_dest: selectedEmail === "NONE" ? "" : selectedEmail
+  };
+
+  tg.HapticFeedback.notificationOccurred("success");
+  tg.sendData(JSON.stringify(payload));
+  tg.close();
+}
+
+function sendCancel() { tg.showConfirm("Отменить работу?", ok => { if(ok){ tg.sendData(JSON.stringify({action:"cancel"})); tg.close(); } }); }
 window.addEventListener("load", init);
 </script>
 </body>
