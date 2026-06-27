@@ -7,99 +7,112 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
   :root {
-    --bg:       #0b0f1a;
-    --surface:  #131825;
-    --card:     #1a2235;
-    --border:   #243050;
-    --accent:   #00d4ff;
-    --accent2:  #0088bb;
-    --warn:     #ff6b35;
-    --ok:       #00e096;
-    --muted:    #4a5a7a;
-    --text:     #e8edf8;
-    --subtext:  #8a9bc0;
-    --font:     'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    --mono:     'SF Mono', 'Fira Code', 'Courier New', monospace;
-    --r:        10px;
-    --r-sm:     6px;
+    --accent:       #d4ff00; /* Яркий салатовый как на скриншоте */
+    --accent-dim:   rgba(212, 255, 0, 0.15);
+    --glass-bg:     rgba(15, 20, 30, 0.45);
+    --glass-border: rgba(255, 255, 255, 0.15);
+    --text:         #ffffff;
+    --subtext:      rgba(255, 255, 255, 0.65);
+    --warn:         #ff6b35;
+    --ok:           #00e096;
+    --font:         'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --mono:         'SF Mono', 'Fira Code', 'Courier New', monospace;
+    --r:            18px;
+    --r-sm:         10px;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
   body {
     font-family: var(--font);
-    background: var(--bg);
     color: var(--text);
     min-height: 100vh;
     padding-bottom: 90px;
     overscroll-behavior: none;
+    /* Морской фон */
+    background-image: url('https://images.unsplash.com/photo-1551244072-5ddf1d17ea18?q=80&w=2000&auto=format&fit=crop');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+  }
+
+  /* ── GLASSMORPHISM HELPERS ── */
+  .glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
   }
 
   /* ── HEADER ── */
   .header {
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
+    background: rgba(10, 15, 25, 0.3);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--glass-border);
     padding: 14px 16px 12px;
     position: sticky;
     top: 0;
     z-index: 100;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
   }
   .header-icon {
     width: 36px; height: 36px;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    border-radius: 8px;
+    background: var(--accent-dim);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    border-radius: 10px;
     display: flex; align-items: center; justify-content: center;
     font-size: 18px; flex-shrink: 0;
   }
-  .header-title { font-size: 15px; font-weight: 700; letter-spacing: .3px; }
+  .header-title { font-size: 15px; font-weight: 700; letter-spacing: .3px; text-shadow: 0 1px 3px rgba(0,0,0,0.5); }
   .header-sub { font-size: 11px; color: var(--subtext); margin-top: 1px; font-family: var(--mono); }
   .header-status {
     margin-left: auto;
     width: 8px; height: 8px;
-    background: var(--ok);
+    background: var(--accent);
     border-radius: 50%;
-    box-shadow: 0 0 6px var(--ok);
+    box-shadow: 0 0 8px var(--accent);
     flex-shrink: 0;
   }
 
   /* ── SECTION LABEL ── */
   .section-label {
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 700;
-    letter-spacing: 1.2px;
+    letter-spacing: 1.5px;
     text-transform: uppercase;
     color: var(--accent);
-    padding: 18px 16px 8px;
+    padding: 20px 16px 8px;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.8);
   }
 
   /* ── CARD ── */
   .card {
-    background: var(--card);
-    border: 1px solid var(--border);
     border-radius: var(--r);
-    margin: 0 12px 8px;
+    margin: 0 12px 10px;
     overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
   }
 
   /* ── FIELD ROW ── */
   .field {
     display: flex;
     align-items: center;
-    padding: 12px 14px;
-    border-bottom: 1px solid var(--border);
-    gap: 10px;
+    padding: 14px 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    gap: 12px;
     cursor: pointer;
     transition: background .15s;
     -webkit-user-select: none; user-select: none;
   }
   .field:last-child { border-bottom: none; }
-  .field:active { background: rgba(0,212,255,.05); }
-  .field-icon { font-size: 16px; width: 22px; text-align: center; flex-shrink: 0; }
+  .field:active { background: rgba(255,255,255,0.1); }
+  .field-icon { font-size: 16px; width: 22px; text-align: center; flex-shrink: 0; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4)); }
   .field-body { flex: 1; min-width: 0; }
-  .field-label { font-size: 10px; color: var(--subtext); font-weight: 600; letter-spacing: .5px; text-transform: uppercase; margin-bottom: 3px; }
+  .field-label { font-size: 10px; color: var(--subtext); font-weight: 600; letter-spacing: .5px; text-transform: uppercase; margin-bottom: 4px; }
   .field-value {
     font-size: 14px;
     font-weight: 600;
@@ -107,30 +120,31 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
   }
   .field-value.mono { font-family: var(--mono); font-size: 13px; }
-  .field-value.dim  { color: var(--muted); font-weight: 400; font-style: italic; }
-  .field-value.ok   { color: var(--ok); }
-  .field-arrow { color: var(--muted); font-size: 12px; flex-shrink: 0; }
+  .field-value.dim  { color: var(--subtext); font-weight: 400; font-style: italic; }
+  .field-value.ok   { color: var(--accent); }
+  .field-arrow { color: var(--subtext); font-size: 14px; flex-shrink: 0; }
 
   /* ── COMPUTED BADGE ── */
   .computed-row {
     display: flex;
     gap: 8px;
-    padding: 12px 14px;
-    border-bottom: 1px solid var(--border);
+    padding: 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
   }
   .computed-row:last-child { border-bottom: none; }
   .computed-chip {
     flex: 1;
-    background: rgba(0,212,255,.07);
-    border: 1px solid rgba(0,212,255,.2);
+    background: rgba(0,0,0,0.25);
+    border: 1px solid var(--glass-border);
     border-radius: var(--r-sm);
-    padding: 8px 10px;
+    padding: 10px;
     text-align: center;
   }
   .computed-chip-label { font-size: 9px; color: var(--subtext); letter-spacing: .8px; text-transform: uppercase; font-weight: 700; }
-  .computed-chip-val { font-size: 16px; font-weight: 800; color: var(--accent); font-family: var(--mono); margin-top: 3px; }
+  .computed-chip-val { font-size: 16px; font-weight: 800; color: var(--accent); font-family: var(--mono); margin-top: 4px; text-shadow: 0 0 8px rgba(212,255,0,0.3); }
   .computed-chip-unit { font-size: 9px; color: var(--subtext); }
 
   /* ── COMPANY PILLS ── */
@@ -138,13 +152,13 @@
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     gap: 8px;
-    padding: 12px 12px;
+    padding: 14px;
   }
   .company-pill {
-    background: var(--card);
-    border: 1.5px solid var(--border);
+    background: rgba(0,0,0,0.25);
+    border: 1px solid var(--glass-border);
     border-radius: var(--r-sm);
-    padding: 10px 8px;
+    padding: 12px 8px;
     text-align: center;
     cursor: pointer;
     transition: all .2s;
@@ -153,203 +167,205 @@
   .company-pill:active { transform: scale(.96); }
   .company-pill.selected {
     border-color: var(--accent);
-    background: rgba(0,212,255,.1);
+    background: var(--accent-dim);
+    box-shadow: 0 0 10px var(--accent-dim);
   }
-  .company-pill-icon { font-size: 20px; margin-bottom: 4px; }
+  .company-pill-icon { font-size: 20px; margin-bottom: 6px; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.5)); }
   .company-pill-name { font-size: 10px; font-weight: 700; color: var(--subtext); line-height: 1.3; }
-  .company-pill.selected .company-pill-name { color: var(--accent); }
+  .company-pill.selected .company-pill-name { color: var(--text); }
 
   /* ── START NUM ── */
   .startnum-block {
-    padding: 12px 14px;
+    padding: 14px;
     display: flex;
     gap: 8px;
     align-items: center;
   }
   .startnum-input {
     flex: 1;
-    background: var(--bg);
-    border: 1.5px solid var(--border);
+    background: rgba(0,0,0,0.3);
+    border: 1px solid var(--glass-border);
     border-radius: var(--r-sm);
-    color: var(--text);
+    color: var(--accent);
     font-family: var(--mono);
     font-size: 18px;
     font-weight: 700;
-    padding: 10px 12px;
+    padding: 12px;
     outline: none;
     text-align: center;
     -webkit-appearance: none;
     appearance: none;
   }
-  .startnum-input:focus { border-color: var(--accent); }
+  .startnum-input:focus { border-color: var(--accent); box-shadow: 0 0 8px var(--accent-dim); }
   .startnum-btn {
-    width: 44px; height: 44px;
-    background: var(--border);
-    border: none;
+    width: 46px; height: 46px;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid var(--glass-border);
     border-radius: var(--r-sm);
     color: var(--text);
     font-size: 20px;
     cursor: pointer;
     display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s;
   }
-  .startnum-hint { font-size: 11px; color: var(--subtext); padding: 0 14px 12px; }
+  .startnum-btn:active { background: rgba(255,255,255,0.1); }
+  .startnum-hint { font-size: 11px; color: var(--subtext); padding: 0 14px 14px; }
 
   /* ── MODAL ── */
   .modal-overlay {
     position: fixed; inset: 0;
-    background: rgba(0,0,0,.7);
-    backdrop-filter: blur(4px);
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
     z-index: 200;
     display: flex;
     align-items: flex-end;
     opacity: 0;
     pointer-events: none;
-    transition: opacity .25s;
+    transition: opacity .3s ease;
   }
   .modal-overlay.open { opacity: 1; pointer-events: all; }
   .modal {
-    background: var(--surface);
-    border-top: 1px solid var(--border);
-    border-radius: 16px 16px 0 0;
+    background: rgba(15, 20, 30, 0.7);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    border-top: 1px solid var(--glass-border);
+    border-radius: 20px 20px 0 0;
     width: 100%;
     padding: 20px 16px 32px;
     transform: translateY(100%);
-    transition: transform .3s cubic-bezier(.4,0,.2,1);
+    transition: transform .4s cubic-bezier(.4,0,.2,1);
+    box-shadow: 0 -10px 40px rgba(0,0,0,0.4);
   }
   .modal-overlay.open .modal { transform: translateY(0); }
   .modal-handle {
-    width: 36px; height: 4px;
-    background: var(--border);
-    border-radius: 2px;
-    margin: 0 auto 16px;
+    width: 40px; height: 5px;
+    background: rgba(255,255,255,0.3);
+    border-radius: 3px;
+    margin: 0 auto 20px;
   }
-  .modal-title { font-size: 16px; font-weight: 800; margin-bottom: 4px; }
-  .modal-sub   { font-size: 12px; color: var(--subtext); margin-bottom: 16px; }
+  .modal-title { font-size: 18px; font-weight: 800; margin-bottom: 4px; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
+  .modal-sub   { font-size: 12px; color: var(--subtext); margin-bottom: 20px; }
   .modal-input {
     width: 100%;
-    background: var(--card);
-    border: 1.5px solid var(--border);
+    background: rgba(0,0,0,0.4);
+    border: 1px solid var(--glass-border);
     border-radius: var(--r-sm);
     color: var(--text);
     font-family: var(--font);
-    font-size: 15px;
-    padding: 12px 14px;
+    font-size: 16px;
+    padding: 14px;
     outline: none;
-    margin-bottom: 12px;
+    margin-bottom: 16px;
     -webkit-appearance: none;
   }
-  .modal-input:focus { border-color: var(--accent); }
-  .modal-input::placeholder { color: var(--muted); }
-  .modal-row { display: flex; gap: 8px; }
+  .modal-input:focus { border-color: var(--accent); box-shadow: 0 0 10px var(--accent-dim); }
+  .modal-input::placeholder { color: rgba(255,255,255,0.3); }
+  .modal-row { display: flex; gap: 10px; }
+  
+  /* ── BUTTONS (Скриншот стайл) ── */
   .modal-btn {
     flex: 1;
-    padding: 13px;
-    border: none;
-    border-radius: var(--r-sm);
-    font-size: 14px;
+    padding: 14px;
+    background: rgba(0,0,0,0.3);
+    border-radius: 30px;
+    font-size: 15px;
     font-weight: 700;
     cursor: pointer;
-    transition: opacity .15s;
+    transition: all .2s;
   }
-  .modal-btn:active { opacity: .7; }
-  .modal-btn.cancel { background: var(--border); color: var(--subtext); }
-  .modal-btn.confirm { background: var(--accent); color: #000; }
+  .modal-btn:active { transform: scale(0.97); }
+  .modal-btn.cancel { 
+    border: 1px solid var(--glass-border); 
+    color: var(--text); 
+  }
+  .modal-btn.confirm { 
+    border: 1px solid var(--accent); 
+    color: var(--accent); 
+    box-shadow: 0 0 10px var(--accent-dim);
+  }
 
   /* ── BOTTOM ACTION ── */
   .bottom-bar {
     position: fixed;
     bottom: 0; left: 0; right: 0;
-    background: var(--surface);
-    border-top: 1px solid var(--border);
-    padding: 12px 16px max(12px, env(safe-area-inset-bottom));
+    background: rgba(10, 15, 25, 0.4);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid var(--glass-border);
+    padding: 14px 16px max(14px, env(safe-area-inset-bottom));
     display: flex;
-    gap: 10px;
+    gap: 12px;
     z-index: 150;
   }
   .btn-main {
     flex: 1;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    color: #000;
-    border: none;
-    border-radius: var(--r);
+    background: rgba(0,0,0,0.4);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    border-radius: 30px;
     font-size: 15px;
-    font-weight: 800;
-    padding: 14px;
-    cursor: pointer;
-    letter-spacing: .3px;
-    transition: opacity .15s, transform .1s;
-  }
-  .btn-main:active { opacity: .8; transform: scale(.98); }
-  .btn-main:disabled { opacity: .35; cursor: default; transform: none; }
-  .btn-secondary {
-    background: var(--card);
-    border: 1px solid var(--border);
-    color: var(--subtext);
-    border-radius: var(--r);
-    font-size: 13px;
     font-weight: 700;
-    padding: 14px 16px;
+    padding: 16px;
+    cursor: pointer;
+    letter-spacing: .5px;
+    transition: all .15s;
+    box-shadow: 0 4px 15px var(--accent-dim);
+  }
+  .btn-main:active { transform: scale(.97); background: var(--accent-dim); }
+  .btn-main:disabled { opacity: .4; cursor: default; transform: none; border-color: var(--glass-border); color: var(--subtext); box-shadow: none; }
+  
+  .btn-secondary {
+    background: rgba(0,0,0,0.4);
+    border: 1px solid var(--glass-border);
+    color: var(--text);
+    border-radius: 30px;
+    font-size: 14px;
+    font-weight: 700;
+    padding: 16px 20px;
     cursor: pointer;
     white-space: nowrap;
+    transition: all .15s;
   }
+  .btn-secondary:active { transform: scale(.97); background: rgba(255,255,255,0.1); }
 
-  /* ── LOADER ── */
-  .loader-screen {
+  /* ── LOADER & SUCCESS SCREENS ── */
+  .fullscreen-overlay {
     position: fixed; inset: 0;
-    background: var(--bg);
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    gap: 16px;
-    z-index: 999;
-    transition: opacity .4s;
-  }
-  .loader-screen.hidden { opacity: 0; pointer-events: none; }
-  .loader-icon { font-size: 48px; animation: pulse 1.5s ease-in-out infinite; }
-  @keyframes pulse { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.1);opacity:.7} }
-  .loader-text { font-size: 14px; color: var(--subtext); font-family: var(--mono); }
-
-  /* ── SUCCESS ── */
-  .success-screen {
-    position: fixed; inset: 0;
-    background: var(--bg);
+    background: rgba(10, 15, 25, 0.7);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
     gap: 16px; padding: 32px;
-    z-index: 998;
+    z-index: 999;
     opacity: 0; pointer-events: none;
     transition: opacity .4s;
   }
-  .success-screen.show { opacity: 1; pointer-events: all; }
-  .success-icon { font-size: 64px; animation: bounce .5s ease; }
-  @keyframes bounce { 0%{transform:scale(0)} 60%{transform:scale(1.15)} 100%{transform:scale(1)} }
-  .success-title { font-size: 22px; font-weight: 800; text-align: center; }
-  .success-sub   { font-size: 14px; color: var(--subtext); text-align: center; line-height: 1.5; }
+  .fullscreen-overlay.show { opacity: 1; pointer-events: all; }
+  
+  .loader-icon { font-size: 56px; animation: pulse 1.5s ease-in-out infinite; filter: drop-shadow(0 0 10px rgba(0,0,0,0.5)); }
+  @keyframes pulse { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.1);opacity:.7} }
+  .loader-text { font-size: 15px; color: var(--text); font-family: var(--mono); text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
 
-  /* ── MISC ── */
-  .divider { height: 1px; background: var(--border); margin: 4px 12px; }
-  .tag {
-    display: inline-block;
-    background: rgba(0,212,255,.12);
-    color: var(--accent);
-    border-radius: 4px;
-    font-size: 10px;
-    font-weight: 700;
-    padding: 2px 6px;
-    letter-spacing: .5px;
-  }
+  .success-icon { font-size: 72px; animation: bounce .6s cubic-bezier(0.175, 0.885, 0.32, 1.275); filter: drop-shadow(0 0 15px rgba(0,224,150,0.5)); }
+  @keyframes bounce { 0%{transform:scale(0)} 100%{transform:scale(1)} }
+  .success-title { font-size: 24px; font-weight: 800; text-align: center; color: var(--accent); text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+  .success-sub   { font-size: 15px; color: var(--text); text-align: center; line-height: 1.5; text-shadow: 0 1px 3px rgba(0,0,0,0.8); }
+
 </style>
 </head>
 <body>
 
 <!-- LOADER -->
-<div class="loader-screen" id="loaderScreen">
+<div class="fullscreen-overlay show" id="loaderScreen">
   <div class="loader-icon">⚓</div>
-  <div class="loader-text">Загрузка данных судна...</div>
+  <div class="loader-text">Считываем глубины...</div>
 </div>
 
 <!-- SUCCESS -->
-<div class="success-screen" id="successScreen">
-  <div class="success-icon">✅</div>
+<div class="fullscreen-overlay" id="successScreen">
+  <div class="success-icon">🌊</div>
   <div class="success-title">Пакет запущен!</div>
   <div class="success-sub" id="successText">Документы генерируются.<br>Бот пришлёт ZIP-архив.</div>
 </div>
@@ -359,14 +375,14 @@
   <div class="header-icon">⚙️</div>
   <div>
     <div class="header-title">Конвейер «Терминатор»</div>
-    <div class="header-sub" id="headerSub">v3.9 · Проверка данных</div>
+    <div class="header-sub" id="headerSub">v4.0 · Glass Edition</div>
   </div>
   <div class="header-status"></div>
 </div>
 
 <!-- VESSEL INFO -->
 <div class="section-label">🚢 Судно</div>
-<div class="card">
+<div class="card glass">
   <div class="field" onclick="editField('vessel_name')">
     <div class="field-icon">🚢</div>
     <div class="field-body">
@@ -394,7 +410,7 @@
   <div class="field" onclick="editField('flag')">
     <div class="field-icon">🏴</div>
     <div class="field-body">
-      <div class="field-label">Флаг / Страна регистрации</div>
+      <div class="field-label">Флаг / Регистрация</div>
       <div class="field-value" id="fld-flag">—</div>
     </div>
     <div class="field-arrow">›</div>
@@ -419,11 +435,11 @@
 
 <!-- DIMENSIONS -->
 <div class="section-label">📏 Размерения</div>
-<div class="card">
+<div class="card glass">
   <div class="field" onclick="editField('loa')">
     <div class="field-icon">📐</div>
     <div class="field-body">
-      <div class="field-label">LOA — Длина наибольшая</div>
+      <div class="field-label">Длина (LOA)</div>
       <div class="field-value mono" id="fld-loa">—</div>
     </div>
     <div class="field-arrow">›</div>
@@ -431,7 +447,7 @@
   <div class="field" onclick="editField('breadth')">
     <div class="field-icon">↔️</div>
     <div class="field-body">
-      <div class="field-label">Breadth — Ширина</div>
+      <div class="field-label">Ширина (Breadth)</div>
       <div class="field-value mono" id="fld-breadth">—</div>
     </div>
     <div class="field-arrow">›</div>
@@ -460,7 +476,7 @@
 
 <!-- DATES & ACT -->
 <div class="section-label">📅 Даты и акт</div>
-<div class="card">
+<div class="card glass">
   <div class="field" onclick="editField('act_number')">
     <div class="field-icon">📜</div>
     <div class="field-body">
@@ -472,7 +488,7 @@
   <div class="field" onclick="editField('diving_date')">
     <div class="field-icon">🤿</div>
     <div class="field-body">
-      <div class="field-label">Дата осмотра (подхода)</div>
+      <div class="field-label">Дата осмотра</div>
       <div class="field-value mono" id="fld-diving_date">—</div>
     </div>
     <div class="field-arrow">›</div>
@@ -497,25 +513,25 @@
 
 <!-- COMPANY -->
 <div class="section-label">🏢 Контрагент</div>
-<div class="card">
+<div class="card glass">
   <div class="company-grid" id="companyGrid"></div>
 </div>
 
 <!-- START NUMBER -->
-<div class="section-label">🔢 Начальный номер документов</div>
-<div class="card">
+<div class="section-label">🔢 Номер документов</div>
+<div class="card glass">
   <div class="startnum-block">
     <button class="startnum-btn" onclick="changeNum(-1)">−</button>
     <input class="startnum-input" type="number" id="startNum" value="146" min="1" inputmode="numeric">
     <button class="startnum-btn" onclick="changeNum(1)">+</button>
   </div>
-  <div class="startnum-hint" id="startNumHint">Рекомендуется: следующий после последнего в БД</div>
+  <div class="startnum-hint" id="startNumHint">Рекомендуется: следующий в БД</div>
 </div>
 
 <!-- BOTTOM BAR -->
 <div class="bottom-bar">
-  <button class="btn-secondary" onclick="sendCancel()">✕</button>
-  <button class="btn-main" id="btnGenerate" onclick="sendData()">⚡ ГЕНЕРИРОВАТЬ ПАКЕТ</button>
+  <button class="btn-secondary" onclick="sendCancel()">✕ Отмена</button>
+  <button class="btn-main" id="btnGenerate" onclick="sendData()">⚡ ГЕНЕРИРОВАТЬ</button>
 </div>
 
 <!-- EDIT MODAL -->
@@ -537,7 +553,7 @@
   <div class="modal">
     <div class="modal-handle"></div>
     <div class="modal-title">Осадка FWD / AFT</div>
-    <div class="modal-sub">Введите осадку носом и кормой в метрах</div>
+    <div class="modal-sub">Введите осадку носом и кормой (м)</div>
     <input class="modal-input" id="draftFore" placeholder="FWD — нос" type="number" step="0.1" inputmode="decimal">
     <input class="modal-input" id="draftAft"  placeholder="AFT — корма" type="number" step="0.1" inputmode="decimal">
     <div class="modal-row">
@@ -579,11 +595,9 @@ const FIELD_META = {
 
 // ── INIT ──
 function init() {
-  // Читаем данные из initData или ищем в URL-параметрах
   let raw = tg.initData || "";
   let vesselData = null;
 
-  // Парсим данные переданные через start_param
   try {
     const params = new URLSearchParams(raw);
     const startParam = params.get("start_param") || new URLSearchParams(location.search).get("data");
@@ -592,7 +606,6 @@ function init() {
     }
   } catch(e) {}
 
-  // Fallback: тестовые данные для разработки
   if (!vesselData) {
     vesselData = {
       vessel_name: "OCEAN PIONEER",
@@ -625,12 +638,12 @@ function init() {
 
   const recNum = (parseInt(state.last_doc_number) || 145) + 1;
   document.getElementById("startNum").value = recNum;
-  document.getElementById("startNumHint").textContent = `Рекомендуется: ${recNum} (следующий после последнего в БД)`;
-  document.getElementById("headerSub").textContent = `v3.9 · ${state.vessel_name || 'Без названия'}`;
+  document.getElementById("startNumHint").textContent = `Рекомендуется: ${recNum}`;
+  document.getElementById("headerSub").textContent = `${state.vessel_name || 'Без названия'} · Проверка`;
 
   setTimeout(() => {
-    document.getElementById("loaderScreen").classList.add("hidden");
-  }, 600);
+    document.getElementById("loaderScreen").classList.remove("show");
+  }, 700);
 }
 
 // ── RENDER ──
@@ -656,7 +669,6 @@ function renderAll() {
   set("fld-date_start",   state.date_start);
   set("fld-date_end",     state.date_end);
 
-  // WSA & Propeller
   recalcWSA();
 }
 
@@ -783,52 +795,41 @@ function sendData() {
 
   const payload = {
     action: "generate",
-    vessel_name:  state.vessel_name,
-    ship_type:    state.ship_type,
-    imo:          state.imo,
-    flag:         state.flag,
-    owner:        state.owner,
-    master_name:  state.master_name,
-    loa:          state.loa,
-    breadth:      state.breadth,
-    draft_fore:   state.draft_fore,
-    draft_aft:    state.draft_aft,
-    act_number:   state.act_number,
-    diving_date:  state.diving_date,
-    date_start:   state.date_start,
-    date_end:     state.date_end,
-    current_date: state.current_date,
-    wetted_surface:  state.wetted_surface,
-    propeller_area:  state.propeller_area,
-    company_key:     state.company_key,
-    start_num:       startNum
+    ...state,
+    start_num: startNum
   };
 
-  document.getElementById("btnGenerate").disabled = true;
+  const btn = document.getElementById("btnGenerate");
+  btn.disabled = true;
+  btn.textContent = "⏳ Отправка...";
 
-  // Отправляем данные в бот
-  tg.sendData(JSON.stringify(payload));
-
-  // Показываем экран успеха
+  // Показываем экран успеха ЗАРАНЕЕ, так как tg.sendData мгновенно закроет апп или бросит ошибку
   document.getElementById("successText").innerHTML =
-    `Судно: <b>${state.vessel_name}</b><br>Документы генерируются.<br>Бот пришлёт ZIP-архив.`;
+    `Судно: <b>${state.vessel_name}</b><br>Документы генерируются.<br>Ожидайте бота...`;
   document.getElementById("successScreen").classList.add("show");
-
   tg.HapticFeedback.notificationOccurred("success");
 
+  // Блокируем ошибку в консоли, если sendData провалится
+  try {
+    tg.sendData(JSON.stringify(payload));
+  } catch (err) {
+    console.warn("tg.sendData() failed, likely due to InlineKeyboardButton context.");
+  }
+  
+  // Принудительно закроем апп (если sendData не закрыл)
   setTimeout(() => tg.close(), 2500);
 }
 
 function sendCancel() {
   tg.showConfirm("Отменить работу с этим судном?", (ok) => {
     if (ok) {
-      tg.sendData(JSON.stringify({ action: "cancel" }));
+      try { tg.sendData(JSON.stringify({ action: "cancel" })); } catch(e){}
       tg.close();
     }
   });
 }
 
-// ── KEYBOARD: Enter в модалке ──
+// ── KEYBOARD: Enter ──
 document.getElementById("modalInput").addEventListener("keydown", e => {
   if (e.key === "Enter") saveModal();
 });
