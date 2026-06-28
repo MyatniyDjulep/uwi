@@ -802,6 +802,9 @@
     <div class="company-grid" id="companyGrid"></div>
   </div>
 
+  <div class="section-label">Отправить агенту</div>
+  <div class="card glass email-list" id="emailContainer"></div>
+
   <div class="section-label">Номер документов</div>
   <div class="card glass">
     <div class="startnum-block">
@@ -814,11 +817,11 @@
 
   <div class="bottom-bar">
     <button class="btn-secondary" onclick="sendCancel()">✕ Отмена</button>
-    <button class="btn-main" onclick="startGenerationFlow()">⚡ Подготовить пакет</button>
+    <button class="btn-main" id="btnGenerate" onclick="submitToBot()">⚡ Генерировать</button>
   </div>
 </div>
 
-<!-- ===== ЭКРАН 2: ПРОЦЕСС ===== -->
+<!-- ===== ЭКРАН 2: ЗАГРУЗКА ===== -->
 <div id="screen-process" class="fullscreen-overlay">
   <div class="loader-rings">
     <div class="loader-core">⚙️</div>
@@ -830,45 +833,7 @@
   </div>
 </div>
 
-<!-- ===== ЭКРАН 3: ПОЧТА ===== -->
-<div id="screen-email" class="screen">
-  <div class="header">
-    <div class="header-badge">📧</div>
-    <div class="header-info">
-      <div class="header-title">Маршрутизация</div>
-      <div class="header-sub">Пакет документов готов</div>
-    </div>
-    <div class="status-dot"></div>
-  </div>
-
-  <div class="section-label">Сводка</div>
-  <div class="card glass summary-card">
-    <div class="summary-row">
-      <div class="summary-label">Судно</div>
-      <div class="summary-val" id="sum-vessel">—</div>
-    </div>
-    <div class="summary-divider"></div>
-    <div class="summary-row">
-      <div class="summary-label">Компания</div>
-      <div class="summary-val" id="sum-company">—</div>
-    </div>
-    <div class="summary-divider"></div>
-    <div class="summary-row">
-      <div class="summary-label">Статус</div>
-      <div class="summary-val accent">✓ Документы сгенерированы</div>
-    </div>
-  </div>
-
-  <div class="section-label">Получатель (агент)</div>
-  <div class="card glass email-list" id="emailContainer"></div>
-
-  <div class="bottom-bar">
-    <button class="btn-secondary" onclick="backToMain()">⬅ Назад</button>
-    <button class="btn-main" id="btnFinalSubmit" onclick="submitToBot()">🚀 Завершить и отправить</button>
-  </div>
-</div>
-
-<!-- ===== ЭКРАН 4: УСПЕХ ===== -->
+<!-- ===== ЭКРАН 3: УСПЕХ ===== -->
 <div id="screen-success" class="fullscreen-overlay">
   <div class="success-anim">
     <div class="success-ring"></div>
@@ -1106,51 +1071,51 @@ function switchScreen(id) {
   window.scrollTo(0, 0);
 }
 
-// ШАГ 1: Анимация процесса
-function startGenerationFlow() {
+// ШАГ 1: Отправка данных в бот (сразу при нажатии Генерировать)
+function submitToBot() {
   if (!state.company_key) {
     tg.showAlert("Пожалуйста, выберите компанию-контрагента.");
     return;
   }
+
+  const btn = document.getElementById("btnGenerate");
+  if (btn) btn.disabled = true;
   tg.HapticFeedback.impactOccurred("heavy");
 
+  // Показываем лоадер
   const overlay  = document.getElementById("screen-process");
   const statusEl = document.getElementById("processStatus");
   const barEl    = document.getElementById("loaderBar");
   overlay.classList.add("show");
+  statusEl.textContent = "Отправка данных боту...";
+  barEl.style.width = "40%";
 
-  const steps = [
-    { text: "Считываем обводы корпуса...",    pct: 25  },
-    { text: "Компиляция шаблонов Word...",    pct: 50  },
-    { text: "Конвертация в PDF...",           pct: 75  },
-    { text: "Сборка финального архива...",    pct: 95  },
-  ];
+  recalcWSA();
 
-  let i = 0;
-  const run = () => {
-    if (i < steps.length) {
-      statusEl.textContent = steps[i].text;
-      barEl.style.width = steps[i].pct + "%";
-      tg.HapticFeedback.selectionChanged();
-      i++;
-      setTimeout(run, 900);
-    } else {
-      barEl.style.width = "100%";
-      setTimeout(() => {
-        overlay.classList.remove("show");
-        prepareEmailScreen();
-      }, 400);
-    }
+  const payload = {
+    action: "generate",
+    ...state,
+    start_num: parseInt(document.getElementById("startNum").value) || 146,
+    email_dest: selectedEmail
   };
-  run();
-}
 
-// ШАГ 2: Экран почты
-function prepareEmailScreen() {
-  document.getElementById("sum-vessel").textContent  = state.vessel_name || "Не указано";
-  document.getElementById("sum-company").textContent = COMPANIES[state.company_key].short;
-  selectEmail("");
-  switchScreen("screen-email");
+  // Отправляем данные в бот
+  let sent = false;
+  try {
+    tg.sendData(JSON.stringify(payload));
+    sent = true;
+  } catch(e) {
+    console.warn("sendData error:", e);
+  }
+
+  barEl.style.width = "100%";
+  statusEl.textContent = sent ? "Готово! Бот запущен." : "Ошибка: откройте через Telegram.";
+
+  setTimeout(() => {
+    overlay.classList.remove("show");
+    document.getElementById("screen-success").classList.add("show");
+    setTimeout(() => tg.close(), 2200);
+  }, 700);
 }
 
 function buildEmailList() {
@@ -1205,31 +1170,6 @@ function sendCancel() {
   });
 }
 
-// ШАГ 3: Отправка в бот
-function submitToBot() {
-  tg.HapticFeedback.notificationOccurred("success");
-  document.getElementById("btnFinalSubmit").disabled = true;
-  document.getElementById("screen-success").classList.add("show");
-
-  recalcWSA();
-
-  const payload = {
-    action: "generate",
-    ...state,
-    start_num: parseInt(document.getElementById("startNum").value) || 146,
-    email_dest: selectedEmail
-  };
-
-  try {
-    tg.sendData(JSON.stringify(payload));
-  } catch(e) {
-    console.warn("Not inside Telegram");
-  }
-
-  setTimeout(() => tg.close(), 2500);
-}
-
-// Enter в модалке
 document.getElementById("modalInput").addEventListener("keydown", e => {
   if (e.key === "Enter") saveModal();
 });
