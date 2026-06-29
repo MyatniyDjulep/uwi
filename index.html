@@ -516,6 +516,182 @@
     box-shadow: 0 0 8px var(--accent);
   }
 
+  /* ── ИНТЕРАКТИВНЫЙ ТРЕКЕР ШАГОВ ── */
+  .process-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 30px;
+    width: 280px;
+    text-align: left;
+  }
+  .step-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    color: var(--subtext);
+    transition: all 0.3s ease;
+    opacity: 0.35;
+  }
+  .step-item.active {
+    opacity: 1;
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .step-item.completed {
+    opacity: 0.9;
+    color: var(--success);
+  }
+  .step-icon {
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border: 1px solid currentColor;
+    font-size: 9px;
+    transition: all 0.3s ease;
+  }
+  .step-item.active .step-icon {
+    animation: pulseGlow 1.5s infinite;
+  }
+  @keyframes pulseGlow {
+    0% { box-shadow: 0 0 0 0 rgba(0, 198, 255, 0.4); }
+    70% { box-shadow: 0 0 0 6px rgba(0, 198, 255, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(0, 198, 255, 0); }
+  }
+
+  /* ── КАРТОЧКА ПОДТВЕРЖДЕНИЯ ВНУТРИ ЛОАДЕРА ── */
+  .confirm-card {
+    display: none;
+    margin-top: 24px;
+    padding: 20px;
+    border-radius: var(--r);
+    background: rgba(10, 24, 46, 0.75);
+    border: 1px solid var(--glass-border-accent);
+    width: 300px;
+    max-width: 90%;
+    animation: cardIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 8px 32px rgba(0, 198, 255, 0.2);
+    text-align: center;
+  }
+  .confirm-card.show {
+    display: block;
+  }
+  @keyframes cardIn {
+    from { opacity: 0; transform: scale(0.9) translateY(12px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+  .confirm-card-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  .confirm-card-sub {
+    font-size: 12px;
+    color: var(--subtext);
+    line-height: 1.45;
+    margin-bottom: 16px;
+  }
+  .confirm-card-btns {
+    display: flex;
+    gap: 10px;
+  }
+  .confirm-card-btns button {
+    flex: 1;
+    border-radius: var(--r-sm);
+    padding: 11px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.15s;
+  }
+  .btn-confirm-send {
+    background: linear-gradient(135deg, var(--success), #00b377);
+    color: #030a16;
+    box-shadow: 0 4px 12px rgba(0, 229, 160, 0.2);
+  }
+  .btn-confirm-send:active {
+    transform: scale(0.97);
+  }
+  .btn-confirm-cancel {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--glass-border) !important;
+    color: var(--text);
+  }
+  .btn-confirm-cancel:active {
+    background: var(--danger-dim);
+    border-color: var(--danger) !important;
+    color: var(--danger);
+    transform: scale(0.97);
+  }
+  
+  /* Анимация бумажного самолетика */
+  .flying-airplane {
+    display: none;
+    font-size: 32px;
+    animation: flyPlane 1.5s infinite linear;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform-origin: center;
+    pointer-events: none;
+    z-index: 1000;
+  }
+  @keyframes flyPlane {
+    0% { transform: translate(-100px, 50px) rotate(-15deg) scale(0.4); opacity: 0; }
+    30% { transform: translate(-30px, 15px) rotate(-15deg) scale(1.1); opacity: 1; }
+    70% { transform: translate(30px, -20px) rotate(-15deg) scale(1.1); opacity: 1; }
+    100% { transform: translate(100px, -60px) rotate(-15deg) scale(0.4); opacity: 0; }
+  }
+
+  /* Блок ошибки */
+  .error-block {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    max-width: 90%;
+    width: 300px;
+    margin-top: 20px;
+    animation: cardIn 0.3s ease;
+  }
+  .error-block.show {
+    display: flex;
+  }
+  .error-msg {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--danger);
+    background: var(--danger-dim);
+    border: 1px solid var(--danger);
+    padding: 10px;
+    border-radius: var(--r-sm);
+    text-align: left;
+    width: 100%;
+    word-break: break-all;
+    max-height: 120px;
+    overflow-y: auto;
+  }
+  .btn-err-back {
+    background: var(--accent-dim);
+    border: 1px solid var(--accent) !important;
+    color: var(--accent);
+    padding: 10px 20px;
+    border-radius: var(--r-sm);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-err-back:active {
+    transform: scale(0.97);
+  }
+
   /* Success */
   .success-anim {
     position: relative; width: 80px; height: 80px;
@@ -823,13 +999,57 @@
 
 <!-- ===== ЭКРАН 2: ЗАГРУЗКА ===== -->
 <div id="screen-process" class="fullscreen-overlay">
-  <div class="loader-rings">
-    <div class="loader-core">⚙️</div>
+  <div class="flying-airplane" id="flyingPlane">✈️</div>
+  
+  <div class="loader-rings" id="loaderRings">
+    <div class="loader-core" id="loaderCore">⚙️</div>
   </div>
-  <div class="loader-text">Конвейер работает</div>
+  <div class="loader-text" id="loaderTitle">Конвейер работает</div>
   <div class="loader-sub" id="processStatus">Инициализация модулей...</div>
-  <div class="loader-bar-wrap">
+  
+  <div class="loader-bar-wrap" id="loaderBarWrap">
     <div class="loader-bar" id="loaderBar"></div>
+  </div>
+  
+  <!-- Чек-лист стадий прогресса -->
+  <div class="process-steps" id="processSteps">
+    <div class="step-item" id="step-generating">
+      <div class="step-icon">1</div>
+      <div class="step-name">Сборка документов Word</div>
+    </div>
+    <div class="step-item" id="step-converting">
+      <div class="step-icon">2</div>
+      <div class="step-name">Конвертация в PDF формат</div>
+    </div>
+    <div class="step-item" id="step-sending_zip">
+      <div class="step-icon">3</div>
+      <div class="step-name">Отправка архива в Telegram</div>
+    </div>
+    <div class="step-item" id="step-waiting_for_confirmation">
+      <div class="step-icon">4</div>
+      <div class="step-name">Подтверждение отправки</div>
+    </div>
+    <div class="step-item" id="step-sending_emails">
+      <div class="step-icon">5</div>
+      <div class="step-name">Доставка писем адресату</div>
+    </div>
+  </div>
+
+  <!-- Карточка подтверждения отправки -->
+  <div class="confirm-card" id="confirmCard">
+    <div class="confirm-card-title">Архив готов к проверке!</div>
+    <div class="confirm-card-sub">Бот отправил ZIP-архив в ваш чат Telegram. Проверьте файлы перед финальной отправкой на почту.</div>
+    <div class="confirm-card-btns">
+      <button class="btn-confirm-cancel" id="btnConfirmCancel">✕ Отменить</button>
+      <button class="btn-confirm-send" id="btnConfirmSend">🚀 Отправить</button>
+    </div>
+  </div>
+
+  <!-- Блок ошибки -->
+  <div class="error-block" id="errorBlock">
+    <div class="loader-text" style="color: var(--danger)">Произошел сбой</div>
+    <div class="error-msg" id="errorMsgText">Детали ошибки отсутствуют.</div>
+    <button class="btn-err-back" onclick="hideLoaderAndGoBack()">⬅️ Вернуться назад</button>
   </div>
 </div>
 
@@ -1072,6 +1292,15 @@ function switchScreen(id) {
 }
 
 // ШАГ 1: Отправка данных в бот (сразу при нажатии Генерировать)
+// Настройка URL бэкенда
+const BACKEND_URL = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" 
+  ? "http://127.0.0.1:8000"
+  : "https://terminator-webapp-render.onrender.com"; // Замените на реальный URL вашего сервиса Render
+
+let pollingInterval = null;
+let currentTaskId = null;
+
+// ШАГ 1: Запуск генерации через API
 function submitToBot() {
   if (!state.company_key) {
     tg.showAlert("Пожалуйста, выберите компанию-контрагента.");
@@ -1082,40 +1311,258 @@ function submitToBot() {
   if (btn) btn.disabled = true;
   tg.HapticFeedback.impactOccurred("heavy");
 
-  // Показываем лоадер
-  const overlay  = document.getElementById("screen-process");
-  const statusEl = document.getElementById("processStatus");
-  const barEl    = document.getElementById("loaderBar");
-  overlay.classList.add("show");
-  statusEl.textContent = "Отправка данных боту...";
-  barEl.style.width = "40%";
+  // Инициализация лоадера
+  resetLoaderUI();
+  document.getElementById("screen-process").classList.add("show");
+  updateLoaderStatus("Инициализация...", "5%", "⚙️");
 
   recalcWSA();
 
-  const payload = {
-    action: "generate",
-    ...state,
-    start_num: parseInt(document.getElementById("startNum").value) || 146,
-    email_dest: selectedEmail
-  };
-
-  // Отправляем данные в бот
-  let sent = false;
+  // Получаем chat_id из данных Telegram Web App (или используем дефолтный для тестов)
+  let chatId = 322318469; // Дефолтный ID
   try {
-    tg.sendData(JSON.stringify(payload));
-    sent = true;
-  } catch(e) {
-    console.warn("sendData error:", e);
+    if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+      chatId = tg.initDataUnsafe.user.id;
+    }
+  } catch (e) {
+    console.warn("Не удалось получить user.id из Web App:", e);
   }
 
-  barEl.style.width = "100%";
-  statusEl.textContent = sent ? "Готово! Бот запущен." : "Ошибка: откройте через Telegram.";
+  const payload = {
+    vessel_name: state.vessel_name || "",
+    ship_type: state.ship_type || "GENERAL CARGO",
+    imo: state.imo || "",
+    flag: state.flag || "",
+    owner: state.owner || "",
+    master_name: state.master_name || "",
+    loa: state.loa || "0.0",
+    breadth: state.breadth || "0.0",
+    draft_fore: state.draft_fore || "0.0",
+    draft_aft: state.draft_aft || "0.0",
+    act_number: state.act_number || "",
+    diving_date: state.diving_date || "",
+    date_start: state.date_start || "",
+    date_end: state.date_end || "",
+    current_date: state.current_date || "",
+    wetted_surface: (state.wetted_surface || "0.0").toString(),
+    propeller_area: (state.propeller_area || "0.0").toString(),
+    company_key: state.company_key,
+    start_num: parseInt(document.getElementById("startNum").value) || 146,
+    email_dest: selectedEmail,
+    chat_id: chatId
+  };
 
+  // Отправляем POST запрос к бэкенду
+  fetch(`${BACKEND_URL}/api/generate`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  })
+  .then(res => {
+    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+    return res.json();
+  })
+  .then(data => {
+    if (data.task_id) {
+      currentTaskId = data.task_id;
+      // Начинаем опрос статуса
+      startPolling(data.task_id);
+    } else {
+      showError("Бэкенд не вернул ID задачи.");
+    }
+  })
+  .catch(err => {
+    console.error("Ошибка запроса генерации:", err);
+    showError(`Не удалось связаться с сервером API. Проверьте адрес бэкенда:\n${err.message}`);
+  });
+}
+
+function resetLoaderUI() {
+  document.getElementById("loaderRings").style.display = "flex";
+  document.getElementById("loaderTitle").style.display = "block";
+  document.getElementById("processStatus").style.display = "block";
+  document.getElementById("loaderBarWrap").style.display = "block";
+  document.getElementById("processSteps").style.display = "flex";
+  document.getElementById("confirmCard").classList.remove("show");
+  document.getElementById("errorBlock").classList.remove("show");
+  document.getElementById("flyingPlane").style.display = "none";
+  
+  // Сбрасываем шаги
+  document.querySelectorAll(".step-item").forEach(el => {
+    el.className = "step-item";
+    const stName = el.id.replace("step-", "");
+    el.querySelector(".step-icon").textContent = stName === "generating" ? "1" : 
+                                                 stName === "converting" ? "2" :
+                                                 stName === "sending_zip" ? "3" :
+                                                 stName === "waiting_for_confirmation" ? "4" : "5";
+  });
+}
+
+function updateLoaderStatus(statusMsg, progressPercent, coreIcon) {
+  const statusEl = document.getElementById("processStatus");
+  const barEl    = document.getElementById("loaderBar");
+  const coreEl   = document.getElementById("loaderCore");
+  
+  if (statusEl) statusEl.textContent = statusMsg;
+  if (barEl) barEl.style.width = progressPercent;
+  if (coreEl && coreIcon) coreEl.textContent = coreIcon;
+}
+
+function startPolling(taskId) {
+  if (pollingInterval) clearInterval(pollingInterval);
+  pollingInterval = setInterval(() => {
+    fetch(`${BACKEND_URL}/api/status/${taskId}`)
+    .then(res => {
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+      return res.json();
+    })
+    .then(data => {
+      handleStatusUpdate(data);
+    })
+    .catch(err => {
+      console.warn("Ошибка опроса статуса:", err);
+    });
+  }, 1200);
+}
+
+function handleStatusUpdate(data) {
+  const status = data.status;
+  const progress = data.progress + "%";
+  const message = data.message;
+  
+  updateStepsUI(status);
+
+  if (status === "preparing") {
+    updateLoaderStatus(message, progress, "⚙️");
+  } 
+  else if (status === "generating_docs") {
+    updateLoaderStatus(message, progress, "📝");
+  } 
+  else if (status === "converting_pdfs") {
+    updateLoaderStatus(message, progress, "📄");
+  } 
+  else if (status === "sending_zip") {
+    updateLoaderStatus(message, progress, "📦");
+  } 
+  else if (status === "waiting_for_confirmation") {
+    clearInterval(pollingInterval);
+    updateLoaderStatus(message, progress, "📥");
+    showConfirmCard();
+  } 
+  else if (status === "sending_emails") {
+    updateLoaderStatus(message, progress, "📡");
+  } 
+  else if (status === "completed") {
+    clearInterval(pollingInterval);
+    showSuccessScreen();
+  } 
+  else if (status === "failed") {
+    clearInterval(pollingInterval);
+    showError(data.error || message);
+  }
+}
+
+function updateStepsUI(currentStatus) {
+  const steps = ["generating_docs", "converting_pdfs", "sending_zip", "waiting_for_confirmation", "sending_emails"];
+  
+  const mapping = {
+    "preparing": "step-generating",
+    "generating_docs": "step-generating",
+    "converting_pdfs": "step-converting",
+    "sending_zip": "step-sending_zip",
+    "waiting_for_confirmation": "step-waiting_for_confirmation",
+    "sending_emails": "step-sending_emails"
+  };
+
+  const activeId = mapping[currentStatus];
+  let passedActive = false;
+
+  steps.forEach(st => {
+    const stepHtmlId = "step-" + (st === "generating_docs" ? "generating" : st === "converting_pdfs" ? "converting" : st);
+    const el = document.getElementById(stepHtmlId);
+    if (!el) return;
+
+    if (stepHtmlId === activeId) {
+      el.className = "step-item active";
+      passedActive = true;
+    } else if (!passedActive) {
+      el.className = "step-item completed";
+      el.querySelector(".step-icon").textContent = "✓";
+    } else {
+      el.className = "step-item";
+    }
+  });
+}
+
+function showConfirmCard() {
+  document.getElementById("loaderBar").style.width = "85%";
+  document.getElementById("confirmCard").classList.add("show");
+  
+  document.getElementById("btnConfirmSend").onclick = () => confirmAction("send");
+  document.getElementById("btnConfirmCancel").onclick = () => confirmAction("cancel");
+}
+
+function confirmAction(action) {
+  document.getElementById("confirmCard").classList.remove("show");
+  
+  if (action === "send") {
+    updateLoaderStatus("Отправка писем...", "90%", "📡");
+    document.getElementById("flyingPlane").style.display = "block";
+  } else {
+    updateLoaderStatus("Отмена операции...", "90%", "🗑");
+  }
+
+  fetch(`${BACKEND_URL}/api/confirm/${currentTaskId}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action: action })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (action === "send") {
+      document.getElementById("flyingPlane").style.display = "none";
+      if (data.status === "success" || data.status === "partial_success") {
+        showSuccessScreen();
+      } else {
+        showError(data.message || "Ошибка отправки почты.");
+      }
+    } else {
+      hideLoaderAndGoBack();
+    }
+  })
+  .catch(err => {
+    document.getElementById("flyingPlane").style.display = "none";
+    showError(`Сетевой сбой при подтверждении:\n${err.message}`);
+  });
+}
+
+function showSuccessScreen() {
+  document.getElementById("screen-process").classList.remove("show");
+  document.getElementById("screen-success").classList.add("show");
+  tg.HapticFeedback.notificationOccurred("success");
   setTimeout(() => {
-    overlay.classList.remove("show");
-    document.getElementById("screen-success").classList.add("show");
-    setTimeout(() => tg.close(), 2200);
-  }, 700);
+    tg.close();
+  }, 2500);
+}
+
+function showError(msg) {
+  document.getElementById("loaderRings").style.display = "none";
+  document.getElementById("loaderTitle").style.display = "none";
+  document.getElementById("processStatus").style.display = "none";
+  document.getElementById("loaderBarWrap").style.display = "none";
+  document.getElementById("processSteps").style.display = "none";
+  document.getElementById("confirmCard").classList.remove("show");
+  
+  document.getElementById("errorMsgText").textContent = msg;
+  document.getElementById("errorBlock").classList.add("show");
+  tg.HapticFeedback.notificationOccurred("error");
+}
+
+function hideLoaderAndGoBack() {
+  if (pollingInterval) clearInterval(pollingInterval);
+  document.getElementById("screen-process").classList.remove("show");
+  const btn = document.getElementById("btnGenerate");
+  if (btn) btn.disabled = false;
 }
 
 function buildEmailList() {
